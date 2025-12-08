@@ -340,6 +340,7 @@ with tab_detalhes:
     ].describe().T
     
     st.subheader(f'Estatísticas Descritivas Agregadas em {year_select}', divider='gray')
+    st.write('Observação: Datas no formato Mês/Dia/Ano')
     col_stat_thai, col_stat_river = st.columns(2)
 
     with col_stat_thai:
@@ -354,7 +355,8 @@ with tab_detalhes:
     # -------------------------------------------------------------------------
 
     st.subheader(f'Tabelas de Eventos Detalhados por Status em {year_select} ({place_select_formated})', divider='gray')
-    
+    st.write('Observação: Datas no formato Mês/Dia/Ano')
+
     # Títulos e DataFrames ajustados para consistência
     st.caption('Eventos em Negociação (Previsto)')
     df_int = create_table(filter_class.run_filter(df), etapa_select='Negociação', previsto=True)
@@ -375,7 +377,8 @@ with tab_executivo:
     # 8. Painéis de Resumo e Relatórios
     # -------------------------------------------------------------------------
     st.subheader(f'Painéis de Resumo Comparativo por Período', divider='gray')
-
+    st.write('Observação: Datas no formato Mês/Dia/Ano')
+    
     col_esq, col_dir = st.columns(2)
 
     with col_esq:
