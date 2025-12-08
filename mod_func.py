@@ -41,7 +41,7 @@ def colunas_lower_replace(x):
     '''
     # x.rename(columns=col_padrao, inplace=True)
     x.columns = x.columns.str.strip().str.lower().str.replace(' ', '_')
-    return
+    return x
 
 
 # Tratando espaços em branco
