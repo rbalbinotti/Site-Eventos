@@ -28,7 +28,7 @@ idna==3.10
 importlib-metadata==8.5.0
 ipykernel==6.29.5
 ipython==8.30.0
-ipython-pygments-lexers==0.1.0
+ipython-pygments-lexers>=1.0.0
 jedi==0.19.1
 Jinja2==3.1.6
 jsonschema==4.25.1
