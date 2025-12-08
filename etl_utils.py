@@ -22,7 +22,21 @@ from dateutil.relativedelta import relativedelta
 
 # Configura o locale para português do Brasil, essencial para o dt.strftime funcionar
 # corretamente com nomes de meses e dias da semana em português.
-locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
+# locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
+
+# Try different locale options
+locales_to_try = ["pt_BR.UTF-8", "pt_BR", "Portuguese_Brazil.1252", "C.UTF-8", "C"]
+
+for loc in locales_to_try:
+    try:
+        locale.setlocale(locale.LC_ALL, loc)
+        print(f"Locale set to: {loc}")
+        break
+    except locale.Error:
+        continue
+else:
+    # If none work, use default
+    locale.setlocale(locale.LC_ALL, "")
 
 
 class DataProcess:
