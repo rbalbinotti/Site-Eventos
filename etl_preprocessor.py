@@ -221,7 +221,7 @@ def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: s
             df_anos_ant["manter_total_previsto"] = True
 
         # Concatena os DataFrames
-        df_thai = pd.concat([df_anos_ant, df], axis=0, join="outer", ignore_index=True)
+        df_thai = pd.concat([df_anos_ant, df_thai], axis=0, join="outer", ignore_index=True)
 
         df_thai.reset_index(drop=True, inplace=True)
 
