@@ -40,7 +40,20 @@ px.defaults.width = 1024
 px.defaults.height = 768
 
 # Configuração de localização para formatação de números e datas (Ex: R$ 1.000,00)
-locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8");
+# locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8");
+# Try different locale options
+locales_to_try = ["pt_BR.UTF-8", "pt_BR", "Portuguese_Brazil.1252", "C.UTF-8", "C"]
+
+for loc in locales_to_try:
+    try:
+        locale.setlocale(locale.LC_ALL, loc)
+        print(f"Locale set to: {loc}")
+        break
+    except locale.Error:
+        continue
+else:
+    # If none work, use default
+    locale.setlocale(locale.LC_ALL, "")
 
 # 2. Configuração da Página Streamlit
 # -----------------------------------------------------------------------------
