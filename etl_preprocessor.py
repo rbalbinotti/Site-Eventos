@@ -173,18 +173,18 @@ def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: s
         columns_float = ["sinal", "preço_kids", "valor_extra", "preço"]
         numeric_cols = columns_float + columns_int
 
-        df = df[columns_manter].copy()
+        df_thai = df_thai[columns_manter].copy()
 
         # Converte 'manter_total_previsto' para booleano
-        df["manter_total_previsto"] = np.where(
-            df["manter_total_previsto"] == "FALSE", 0, 1
+        df_thai["manter_total_previsto"] = np.where(
+            df_thai["manter_total_previsto"] == "FALSE", 0, 1
         ).astype(bool)
 
-        df = df.replace("", np.nan)
+        df_thai = df_thai.replace("", np.nan)
 
         # Converte colunas numéricas de string (com vírgula) para float
-        df[numeric_cols] = (
-            df[numeric_cols].apply(lambda x: x.str.replace(",", ".")).astype(float)
+        df_thai[numeric_cols] = (
+            df_thai[numeric_cols].apply(lambda x: x.str.replace(",", ".")).astype(float)
         )
 
 
