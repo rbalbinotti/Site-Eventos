@@ -11,6 +11,8 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import streamlit as st
 
+gcp_service_account = st.secrets["gcp_service_account"]
+
 warnings.filterwarnings("ignore")
 
 
