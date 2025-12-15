@@ -11,8 +11,6 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import streamlit as st
 
-gcp_service_account = st.secrets["gcp_service_account"]
-
 warnings.filterwarnings("ignore")
 
 
@@ -61,6 +59,9 @@ def get_google_sheet_data(sheet_title: str, worksheet_name: str, local: bool = F
         """
         Autentica no Google Sheets usando st.secrets e carrega o DataFrame.
         """
+
+        gcp_service_account = st.secrets["gcp_service_account"]
+        
         # 1. Carrega as credenciais do Streamlit Secrets 
         # (Nome da chave deve ser o mesmo usado no seu .streamlit/secrets.toml)
         try:
@@ -85,35 +86,6 @@ def get_google_sheet_data(sheet_title: str, worksheet_name: str, local: bool = F
         
         print(f'Dados carregados de: {sheet_title} - {worksheet_name}')
         return df
-
-# def get_google_sheet_data(sheet_title: str, worksheet_name: str) -> pd.DataFrame:
-#     """
-#     Autentica no Google Sheets usando st.secrets e carrega o DataFrame.
-#     """
-#     # 1. Carrega as credenciais do Streamlit Secrets 
-#     # (Nome da chave deve ser o mesmo usado no seu .streamlit/secrets.toml)
-#     try:
-#         gcp_service_account_dict = dict(st.secrets["gcp_service_account"])
-#     except FileNotFoundError:
-#         st.error("Erro: O arquivo .streamlit/secrets.toml não foi configurado.")
-#         return pd.DataFrame()
-        
-#     # 2. Autentica o gspread
-#     gc = gspread.service_account_from_dict(gcp_service_account_dict)
-    
-#     # 3. Abre a planilha e a aba
-#     # ATENÇÃO: Substitua os placeholders pelos nomes reais da sua planilha e aba!
-#     sh = gc.open(sheet_title)
-#     worksheet = sh.worksheet(worksheet_name)
-    
-#     # 4. Obtém todos os dados (lista de listas)
-#     data = worksheet.get_all_values()
-    
-#     # 5. Cria o DataFrame (primeira linha como cabeçalho, resto como dados)
-#     df = pd.DataFrame(data[1:], columns=data[0])
-    
-#     print(f'Dados carregados de: {sheet_title} - {worksheet_name}')
-#     return df
 
 
 # -------------------------------------------------------------------------
