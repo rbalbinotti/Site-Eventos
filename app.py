@@ -11,7 +11,7 @@ from dateutil.relativedelta import relativedelta
 # Importações de módulos locais (presume-se que existam)
 # ATENÇÃO: Essas importações são mantidas, mas as classes/funções
 # etl_preprocessor, etl_utils, charts DEVE EXISTIR para o código rodar.
-from site_proj.etl_preprocessor import run_full_etl
+from etl_preprocessor import run_full_etl
 from etl_utils import DataProcess, FilterSelection, dre
 from charts import config_plot, plot_hist, plot_hztl, plot_pie, create_table, PainelEventos, GeradorRelatoriosEventos
 
