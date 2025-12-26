@@ -19,7 +19,7 @@ warnings.filterwarnings("ignore")
 # FUNÇÃO DE EXTRAÇÃO DE DADOS (E do ETL) - USO EXCLUSIVO DO STREAMLIT CLOUD
 # -------------------------------------------------------------------------
 # O cache evita que a planilha seja lida novamente a cada interação do usuário.
-@st.cache_data(ttl=600) # ttl=600 significa que o cache dura 10 minutos
+#@st.cache_data(ttl=600) # ttl=600 significa que o cache dura 10 minutos
 def get_google_sheet_data(sheet_title: str, worksheet_name: str, local: bool = False) -> pd.DataFrame:
 
     if local:
@@ -158,7 +158,7 @@ def calculos_automaticos(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
-def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: str = "Completa") -> pd.DataFrame:
+def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: str = "Completa", local: bool = False) -> pd.DataFrame:
     """
     Executa a sequência completa de Extração, Transformação e Carregamento (ETL).
     
@@ -186,7 +186,7 @@ def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: s
 
     # 1. EXTRAÇÃO (E): CHAMADA DA FUNÇÃO DE CONEXÃO
     # A variável df_thai recebe os dados do Google Sheets
-    df_thai = get_google_sheet_data(sheet_title, worksheet_name)
+    df_thai = get_google_sheet_data(sheet_title, worksheet_name, local)
 
     # VERIFICAÇÃO BÁSICA
     if df_thai.empty:
@@ -226,7 +226,7 @@ def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: s
 
         # Leitura do dados dos anos anteriores
         try:
-            df_anos_ant = get_google_sheet_data(sheet_title='dados_anos_anteriores', worksheet_name='Sheet1')
+            df_anos_ant = get_google_sheet_data(sheet_title='dados_anos_anteriores', worksheet_name='Sheet1', local=local)
 
         except FileNotFoundError:
             print(f"Erro: Arquivo de dados de anos anteriores não encontrado. Continuando com DataFrame atual apenas.")

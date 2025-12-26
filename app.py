@@ -11,7 +11,7 @@ from dateutil.relativedelta import relativedelta
 # Importações de módulos locais (presume-se que existam)
 # ATENÇÃO: Essas importações são mantidas, mas as classes/funções
 # etl_preprocessor, etl_utils, charts DEVE EXISTIR para o código rodar.
-from etl_preprocessor import run_full_etl
+from site_proj.etl_preprocessor import run_full_etl
 from etl_utils import DataProcess, FilterSelection, dre
 from charts import config_plot, plot_hist, plot_hztl, plot_pie, create_table, PainelEventos, GeradorRelatoriosEventos
 
@@ -67,7 +67,7 @@ currentYear = currentDate.year
 @st.cache_data
 def load_data():
     """Roda o processo completo de ETL e carrega os dados brutos."""
-    df = run_full_etl()
+    df = run_full_etl(sheet_title="Prog_eventos_thai_house", worksheet_name="Completa")
     return df
 
 # Carrega os dados
@@ -328,14 +328,15 @@ with tab_demanda:
 with tab_detalhes:
     # 6. Estatísticas Descritivas por Local
     # -------------------------------------------------------------------------
-    
     # Aplica filtros e calcula estatísticas para Thai House
-    thai_loc = filter_thai.run_filter(df, filter_place=True, filter_stage=True, filter_year=True)
+    filter_thai_real_fech = FilterSelection(place_select=['Thai house'], stage_select=['Realizado', 'Fechado'], year_select=year_select)
+    thai_loc = filter_thai_real_fech.run_filter(df, filter_place=True, filter_stage=True, filter_year=True)
     thai_loc = thai_loc.loc[:,["Total convidados previsto", "Valor total previsto",  "Total convidados presentes", "Valor total realizado"]
     ].describe().T
 
     # Aplica filtros e calcula estatísticas para River
-    river_loc = filter_river.run_filter(df, filter_place=True, filter_stage=True, filter_year=True)
+    filter_river_real_fech = FilterSelection(place_select=['River'], stage_select=['Realizado', 'Fechado'], year_select=year_select)
+    river_loc = filter_river_real_fech.run_filter(df, filter_place=True, filter_stage=True, filter_year=True)
     river_loc = river_loc.loc[:,["Total convidados previsto", "Valor total previsto",  "Total convidados presentes", "Valor total realizado"]
     ].describe().T
     
