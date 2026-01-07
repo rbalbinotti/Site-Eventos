@@ -593,7 +593,8 @@ class GeradorRelatoriosEventos:
             (self.df_dados['Valor total realizado'] > 0) &
             (self.df_dados['Etapa'] == 'Realizado') &
             (self.df_dados['Total convidados presentes'] > 0) &
-            (self.df_dados['Local'] == self.local_analisado)
+            (self.df_dados['Local'] == self.local_analisado) &
+            (self.df_dados['Data evento'].dt.year == self.ano_referencia)
         )
         return self.df_dados.query('@filtro_base')
 
@@ -740,7 +741,8 @@ class GeradorRelatoriosEventos:
         fig_subplots.update_layout(
             height=1000,
             width=1400,
-            title_text=f"Distribuição de Eventos Realizados - {self.local_analisado} (Ano {self.ano_referencia})",
+            # title_text=f"Distribuição de Eventos Realizados - {self.local_analisado} (Ano {self.ano_referencia})",
+            title_text="",
             bargap=0.1,
             title_x=0.5,
         )

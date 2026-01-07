@@ -67,7 +67,7 @@ currentYear = currentDate.year
 @st.cache_data
 def load_data():
     """Roda o processo completo de ETL e carrega os dados brutos."""
-    df = run_full_etl(sheet_title="Prog_eventos_thai_house", worksheet_name="Completa")
+    df = run_full_etl(sheet_title="Prog_eventos_thai_house", worksheet_name="Completa", local=False)
     return df
 
 # Carrega os dados
@@ -148,7 +148,7 @@ with tab_financ:
 
     # Gráfico: Valor Previsto Acumulado por Ano
     with col1:
-        st.caption(f'Valor Total Previsto (Acumulado por Ano)')
+        st.write(f'Valor Total Previsto (Acumulado por Ano)')
         plot_ = config_plot(
             plot_hist(
                 df, 
@@ -160,7 +160,7 @@ with tab_financ:
 
     # Gráfico: Valor Realizado Acumulado por Ano
     with col2:
-        st.caption(f'Valor Total Realizado (Acumulado por Ano)')
+        st.write(f'Valor Total Realizado (Acumulado por Ano)')
         plot_ = config_plot(
             plot_hist(
                 df, 
@@ -175,7 +175,7 @@ with tab_financ:
 
     # Gráfico: Valor Previsto Mensal (Ano Selecionado)
     with col1b:
-        st.caption(f'Valor Previsto Mensal')
+        st.write(f'Valor Previsto Mensal')
         plot_ = config_plot(
             plot_hist(
                 filter_class.run_filter(df), 
@@ -187,7 +187,7 @@ with tab_financ:
 
     # Gráfico: Valor Realizado Mensal (Ano Selecionado)
     with col2b:
-        st.caption(f'Valor Realizado Mensal')
+        st.write(f'Valor Realizado Mensal')
         plot_ = config_plot(
             plot_hist(
                 filter_class.run_filter(df), 
@@ -231,7 +231,7 @@ with tab_demanda:
     col_e, col_c = st.columns(2) # Modificado de 3 para 2 para otimizar espaço
 
     with col_e:
-        st.caption('Frequência de Orçamentos por Ano')
+        st.write('Frequência de Orçamentos por Ano')
         # Cria o histograma
         figh = px.histogram(
             df[["Ano evento", "Local"]],
@@ -241,13 +241,13 @@ with tab_demanda:
             text_auto=True,
         )
         # Configurações do layout
-        figh.update_layout(title="", bargap=0.1, separators=",.", showlegend=False)
+        figh.update_layout(title='', bargap=0.1, separators=",.", showlegend=False)
         figh.update_yaxes(title=None, dtick=1)
         figh.update_xaxes(title=None)
         st.plotly_chart(figh, use_container_width=True) # Mantido use_container_width=True
 
     with col_c:
-        st.caption(f"Orçamentos Solicitados por Mês em {year_select}")
+        st.write(f"Orçamentos Solicitados por Mês em {year_select}")
         plotted = config_plot(
             plot_hist(filter_class.run_filter(df), 'Mes evento'),
             ord_date=True,
@@ -257,14 +257,14 @@ with tab_demanda:
     col_convidados_ano, col_convidados_mes = st.columns(2)
 
     with col_convidados_ano:
-        st.caption(f"Total de Convidados (Previsto/Realizado) por Ano") # Título mais claro
-        st.write('Nota: Considera-se o total de convidados presentes em eventos realizados.') # Texto atualizado
+        st.write(f"Total de Convidados (Previsto/Realizado) por Ano") # Título mais claro
+        st.caption('Nota: Considera-se o total de convidados presentes em eventos realizados a partir de 2025.') # Texto atualizado
         plot_ = plot_hztl(df, select_month=False)
         st.plotly_chart(plot_, use_container_width=True)
 
     with col_convidados_mes:
-        st.caption(f"Total de Convidados (Previsto/Realizado) por Mês") # Título mais claro
-        st.write('Nota: Considera-se o total de convidados presentes em eventos realizados.') # Texto atualizado
+        st.write(f"Total de Convidados (Previsto/Realizado) por Mês") # Título mais claro
+        st.caption('Nota: Considera-se o total de convidados presentes em eventos realizados a partir de 2025.') # Texto atualizado
         plot_ = plot_hztl(df, select_month=True)
         st.plotly_chart(plot_, use_container_width=True)
 
@@ -274,12 +274,12 @@ with tab_demanda:
     col_pie1, col_pie2 = st.columns(2)
 
     with col_pie1:
-        st.caption(f"Distribuição de Orçamentos por Mês - Ano {year_select}")
+        st.write(f"Distribuição de Orçamentos por Mês - Ano {year_select}")
         fig_pie = plot_pie(filter_class.run_filter(df), 'Mes evento')
         st.plotly_chart(fig_pie, use_container_width=True)
 
     with col_pie2:
-        st.caption(f"Distribuição por Dia da Semana - Ano {year_select}")
+        st.write(f"Distribuição por Dia da Semana - Ano {year_select}")
         fig_pie = plot_pie(filter_class.run_filter(df), 'Dia semana')
         st.plotly_chart(fig_pie, use_container_width=True)
 
@@ -287,12 +287,12 @@ with tab_demanda:
     col_pie3, col_pie4 = st.columns(2)
 
     with col_pie3:
-        st.caption(f"Status do Processo (Etapas) - Ano {year_select}")
+        st.write(f"Status do Processo (Etapas) - Ano {year_select}")
         fig_pie = plot_pie(filter_class.run_filter(df), 'Etapa')
         st.plotly_chart(fig_pie, use_container_width=True)
 
     with col_pie4:
-        st.caption(f"Procura por Tipo de Cardápio - Ano {year_select}")
+        st.write(f"Procura por Tipo de Cardápio - Ano {year_select}")
         fig_pie = plot_pie(filter_class.run_filter(df), 'Cardápio')
         st.plotly_chart(fig_pie, use_container_width=True)
 
@@ -307,14 +307,14 @@ with tab_demanda:
 #     col_funil, col_taxas = st.columns(2)
     
 #     with col_funil:
-#         st.caption("Funil de Etapas de Eventos (Orçamento > Negociação > Fechado)")
+#         st.write("Funil de Etapas de Eventos (Orçamento > Negociação > Fechado)")
 #         # Simulação de um gráfico de Funil (necessita de função 'plot_funnel' real)
 #         # fig_funil = plot_funnel(filter_class.run_filter(df))
 #         # st.plotly_chart(fig_funil, use_container_width=True)
 #         st.markdown("> **Placeholder:** Gráfico de Funil (Volume de Eventos por Etapa).")
 
 #     with col_taxas:
-#         st.caption("Taxas de Conversão Chave")
+#         st.write("Taxas de Conversão Chave")
 #         # Simulação de KPIs de Conversão
 #         # st.metric("Taxa Orçamento -> Fechado", "X.X%", delta="Y.Y% vs. Mês Anterior")
 #         # st.metric("Taxa Fechado -> Realizado", "Z.Z%", delta="W.W% vs. Meta")
@@ -341,33 +341,33 @@ with tab_detalhes:
     ].describe().T
     
     st.subheader(f'Estatísticas Descritivas Agregadas em {year_select}', divider='gray')
-    st.write('Observação: Datas no formato Mês/Dia/Ano')
+    st.caption('Observação: Datas no formato Mês/Dia/Ano')
     col_stat_thai, col_stat_river = st.columns(2)
 
     with col_stat_thai:
-        st.caption(f'Estatísticas Descritivas: Thai House')
+        st.write(f'Estatísticas Descritivas: Thai House')
         st.dataframe(thai_loc, use_container_width=True) # Adicionado use_container_width
     
     with col_stat_river:
-        st.caption(f'Estatísticas Descritivas: River')
+        st.write(f'Estatísticas Descritivas: River')
         st.dataframe(river_loc, use_container_width=True) # Adicionado use_container_width
         
     # 7. Tabelas Detalhadas
     # -------------------------------------------------------------------------
 
     st.subheader(f'Tabelas de Eventos Detalhados por Status em {year_select} ({place_select_formated})', divider='gray')
-    st.write('Observação: Datas no formato Mês/Dia/Ano')
+    st.caption('Observação: Datas no formato Mês/Dia/Ano')
 
     # Títulos e DataFrames ajustados para consistência
-    st.caption('Eventos em Negociação (Previsto)')
+    st.write('Eventos em Negociação (Previsto)')
     df_int = create_table(filter_class.run_filter(df), etapa_select='Negociação', previsto=True)
     st.dataframe(df_int, use_container_width=True)
 
-    st.caption('Eventos Fechados (Previsto)')
+    st.write('Eventos Fechados (Previsto)')
     df_int = create_table(filter_class.run_filter(df), etapa_select='Fechado', previsto=True)
     st.dataframe(df_int, use_container_width=True)
 
-    st.caption('Eventos Realizados (Realizado)')
+    st.write('Eventos Realizados (Realizado)')
     df_int = create_table(filter_class.run_filter(df), etapa_select='Realizado', previsto=False)
     st.dataframe(df_int, use_container_width=True)
 
@@ -378,34 +378,35 @@ with tab_executivo:
     # 8. Painéis de Resumo e Relatórios
     # -------------------------------------------------------------------------
     st.subheader(f'Painéis de Resumo Comparativo por Período', divider='gray')
-    st.write('Observação: Datas no formato Mês/Dia/Ano')
     
     col_esq, col_dir = st.columns(2)
 
     with col_esq:
-        st.caption("Painel de Performance (Último Mês)") # Título mais descritivo
+        st.write("Painel de Performance (Último Mês)") # Título mais descritivo
         painel_maker = PainelEventos(n_meses_retroativos=1)
         fig_final = painel_maker.gerar_painel(df)
         st.plotly_chart(fig_final, use_container_width=True)
     
     with col_dir:
-        st.caption("Painel de Performance (Últimos 2 Meses)") # Título mais descritivo
+        st.write("Painel de Performance (Últimos 2 Meses)") # Título mais descritivo
         painel_maker = PainelEventos(n_meses_retroativos=2)
         fig_final = painel_maker.gerar_painel(df)
         st.plotly_chart(fig_final, use_container_width=True)
 
     st.subheader(f'Relatórios Completos por Local - Eventos Realizados em {year_select}', divider='gray')
 
+    st.caption('Relatórios gerados a partir de 2025.')
+
     col_esq, col_dir = st.columns(2)
 
     with col_esq:
-        st.caption(f"Thai house - Análise Detalhada de Eventos Realizados")
+        st.write(f"Thai house - Análise Detalhada de Eventos Realizados")
         summary_generator = GeradorRelatoriosEventos(df, ano_referencia=year_select, local_analisado='Thai house')
         summary_plot = summary_generator.gerar_relatorio_completo()
-        st.plotly_chart(summary_plot, use_container_width=True)
+        st.plotly_chart(summary_plot, use_container_width=True, key='plotly_chart1')
     
     with col_dir:
-        st.caption(f"River - Análise Detalhada de Eventos Realizados")
+        st.write(f"River - Análise Detalhada de Eventos Realizados")
         summary_generator = GeradorRelatoriosEventos(df, ano_referencia=year_select, local_analisado='River')
         summary_plot = summary_generator.gerar_relatorio_completo()
-        st.plotly_chart(summary_plot, use_container_width=True)
+        st.plotly_chart(summary_plot, use_container_width=True, key='plotly_chart2')
