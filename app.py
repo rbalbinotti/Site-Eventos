@@ -67,7 +67,7 @@ currentYear = currentDate.year
 @st.cache_data
 def load_data():
     """Roda o processo completo de ETL e carrega os dados brutos."""
-    df = run_full_etl(sheet_title="Prog_eventos_thai_house", worksheet_name="Completa", local=False)
+    df = run_full_etl(sheet_title="Prog_eventos_thai_house", worksheet_name="Completa", local=True)
     return df
 
 # Carrega os dados
@@ -156,7 +156,7 @@ with tab_financ:
                 y_axis='Valor total previsto',
                 color='Local')
             , legend = False, ord_date=True)
-        st.plotly_chart(plot_, use_container_width=True) # Adicionado use_container_width
+        st.plotly_chart(plot_, width='stretch') # Adicionado use_container_width
 
     # Gráfico: Valor Realizado Acumulado por Ano
     with col2:
@@ -168,7 +168,7 @@ with tab_financ:
                 y_axis='Valor total realizado',
                 color='Local')
             , legend = True, ord_date=True)
-        st.plotly_chart(plot_, use_container_width=True) # Adicionado use_container_width
+        st.plotly_chart(plot_, width='stretch') # Adicionado use_container_width
     
     st.subheader(f'Desempenho Mensal em {year_select} - {place_select_formated}', divider='gray')
     col1b, col2b = st.columns(2)
@@ -183,7 +183,7 @@ with tab_financ:
                 y_axis='Valor total previsto',
                 color='Local')
             , legend = False, ord_date=True)
-        st.plotly_chart(plot_, use_container_width=True) # Adicionado use_container_width
+        st.plotly_chart(plot_, width='stretch') # Adicionado use_container_width
 
     # Gráfico: Valor Realizado Mensal (Ano Selecionado)
     with col2b:
@@ -195,7 +195,7 @@ with tab_financ:
                 y_axis='Valor total realizado',
                 color='Local')
             , legend = True, ord_date=True)
-        st.plotly_chart(plot_, use_container_width=True) # Adicionado use_container_width
+        st.plotly_chart(plot_, width='stretch') # Adicionado use_container_width
 
     with col1b:
         # Gráfico: Ticket Médio (Agora em largura total para destaque)
@@ -218,7 +218,7 @@ with tab_financ:
                 y_axis='Ticket médio',
                 color='Local')
                 , ord_date=False, legend=True)
-        st.plotly_chart(plot_, use_container_width=True) # Adicionado use_container_width
+        st.plotly_chart(plot_, width='stretch') # Adicionado use_container_width
 
 
 # -----------------------------------------------------------------------------
@@ -244,7 +244,7 @@ with tab_demanda:
         figh.update_layout(title='', bargap=0.1, separators=",.", showlegend=False)
         figh.update_yaxes(title=None, dtick=1)
         figh.update_xaxes(title=None)
-        st.plotly_chart(figh, use_container_width=True) # Mantido use_container_width=True
+        st.plotly_chart(figh, width='stretch') # Mantido width='stretch'
 
     with col_c:
         st.write(f"Orçamentos Solicitados por Mês em {year_select}")
@@ -252,7 +252,7 @@ with tab_demanda:
             plot_hist(filter_class.run_filter(df), 'Mes evento'),
             ord_date=True,
             legend='Local')
-        st.plotly_chart(plotted, use_container_width=True) # Adicionado use_container_width
+        st.plotly_chart(plotted, width='stretch') # Adicionado use_container_width
 
     col_convidados_ano, col_convidados_mes = st.columns(2)
 
@@ -260,13 +260,13 @@ with tab_demanda:
         st.write(f"Total de Convidados (Previsto/Realizado) por Ano") # Título mais claro
         st.caption('Nota: Considera-se o total de convidados presentes em eventos realizados a partir de 2025.') # Texto atualizado
         plot_ = plot_hztl(df, select_month=False)
-        st.plotly_chart(plot_, use_container_width=True)
+        st.plotly_chart(plot_, width='stretch')
 
     with col_convidados_mes:
         st.write(f"Total de Convidados (Previsto/Realizado) por Mês") # Título mais claro
         st.caption('Nota: Considera-se o total de convidados presentes em eventos realizados a partir de 2025.') # Texto atualizado
         plot_ = plot_hztl(df, select_month=True)
-        st.plotly_chart(plot_, use_container_width=True)
+        st.plotly_chart(plot_, width='stretch')
 
     st.subheader('Distribuição da Procura (Gráficos de Pizza)', divider='gray')
     
@@ -276,12 +276,12 @@ with tab_demanda:
     with col_pie1:
         st.write(f"Distribuição de Orçamentos por Mês - Ano {year_select}")
         fig_pie = plot_pie(filter_class.run_filter(df), 'Mes evento')
-        st.plotly_chart(fig_pie, use_container_width=True)
+        st.plotly_chart(fig_pie, width='stretch')
 
     with col_pie2:
         st.write(f"Distribuição por Dia da Semana - Ano {year_select}")
         fig_pie = plot_pie(filter_class.run_filter(df), 'Dia semana')
-        st.plotly_chart(fig_pie, use_container_width=True)
+        st.plotly_chart(fig_pie, width='stretch')
 
     # Gráficos de Pizza: Etapa e Cardápio
     col_pie3, col_pie4 = st.columns(2)
@@ -289,12 +289,12 @@ with tab_demanda:
     with col_pie3:
         st.write(f"Status do Processo (Etapas) - Ano {year_select}")
         fig_pie = plot_pie(filter_class.run_filter(df), 'Etapa')
-        st.plotly_chart(fig_pie, use_container_width=True)
+        st.plotly_chart(fig_pie, width='stretch')
 
     with col_pie4:
         st.write(f"Procura por Tipo de Cardápio - Ano {year_select}")
         fig_pie = plot_pie(filter_class.run_filter(df), 'Cardápio')
-        st.plotly_chart(fig_pie, use_container_width=True)
+        st.plotly_chart(fig_pie, width='stretch')
 
 # # -----------------------------------------------------------------------------
 # # ABA 3: Funil & Taxas de Conversão (Nova Aba)
@@ -310,7 +310,7 @@ with tab_demanda:
 #         st.write("Funil de Etapas de Eventos (Orçamento > Negociação > Fechado)")
 #         # Simulação de um gráfico de Funil (necessita de função 'plot_funnel' real)
 #         # fig_funil = plot_funnel(filter_class.run_filter(df))
-#         # st.plotly_chart(fig_funil, use_container_width=True)
+#         # st.plotly_chart(fig_funil, width='stretch')
 #         st.markdown("> **Placeholder:** Gráfico de Funil (Volume de Eventos por Etapa).")
 
 #     with col_taxas:
@@ -346,11 +346,11 @@ with tab_detalhes:
 
     with col_stat_thai:
         st.write(f'Estatísticas Descritivas: Thai House')
-        st.dataframe(thai_loc, use_container_width=True) # Adicionado use_container_width
+        st.dataframe(thai_loc, width='stretch') # Adicionado use_container_width
     
     with col_stat_river:
         st.write(f'Estatísticas Descritivas: River')
-        st.dataframe(river_loc, use_container_width=True) # Adicionado use_container_width
+        st.dataframe(river_loc, width='stretch') # Adicionado use_container_width
         
     # 7. Tabelas Detalhadas
     # -------------------------------------------------------------------------
@@ -361,15 +361,15 @@ with tab_detalhes:
     # Títulos e DataFrames ajustados para consistência
     st.write('Eventos em Negociação (Previsto)')
     df_int = create_table(filter_class.run_filter(df), etapa_select='Negociação', previsto=True)
-    st.dataframe(df_int, use_container_width=True)
+    st.dataframe(df_int, width='stretch')
 
     st.write('Eventos Fechados (Previsto)')
     df_int = create_table(filter_class.run_filter(df), etapa_select='Fechado', previsto=True)
-    st.dataframe(df_int, use_container_width=True)
+    st.dataframe(df_int, width='stretch')
 
     st.write('Eventos Realizados (Realizado)')
     df_int = create_table(filter_class.run_filter(df), etapa_select='Realizado', previsto=False)
-    st.dataframe(df_int, use_container_width=True)
+    st.dataframe(df_int, width='stretch')
 
 # -----------------------------------------------------------------------------
 # ABA 5: Relatórios Executivos (KPIs)
@@ -385,13 +385,13 @@ with tab_executivo:
         st.write("Painel de Performance (Último Mês)") # Título mais descritivo
         painel_maker = PainelEventos(n_meses_retroativos=1)
         fig_final = painel_maker.gerar_painel(df)
-        st.plotly_chart(fig_final, use_container_width=True)
+        st.plotly_chart(fig_final, width='stretch')
     
     with col_dir:
         st.write("Painel de Performance (Últimos 2 Meses)") # Título mais descritivo
         painel_maker = PainelEventos(n_meses_retroativos=2)
         fig_final = painel_maker.gerar_painel(df)
-        st.plotly_chart(fig_final, use_container_width=True)
+        st.plotly_chart(fig_final, width='stretch')
 
     st.subheader(f'Relatórios Completos por Local - Eventos Realizados em {year_select}', divider='gray')
 
@@ -403,10 +403,10 @@ with tab_executivo:
         st.write(f"Thai house - Análise Detalhada de Eventos Realizados")
         summary_generator = GeradorRelatoriosEventos(df, ano_referencia=year_select, local_analisado='Thai house')
         summary_plot = summary_generator.gerar_relatorio_completo()
-        st.plotly_chart(summary_plot, use_container_width=True, key='plotly_chart1')
+        st.plotly_chart(summary_plot, width='stretch', key='plotly_chart1')
     
     with col_dir:
         st.write(f"River - Análise Detalhada de Eventos Realizados")
         summary_generator = GeradorRelatoriosEventos(df, ano_referencia=year_select, local_analisado='River')
         summary_plot = summary_generator.gerar_relatorio_completo()
-        st.plotly_chart(summary_plot, use_container_width=True, key='plotly_chart2')
+        st.plotly_chart(summary_plot, width='stretch', key='plotly_chart2')
