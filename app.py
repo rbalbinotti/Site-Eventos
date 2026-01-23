@@ -329,13 +329,13 @@ with tab_detalhes:
     # 6. Estatísticas Descritivas por Local
     # -------------------------------------------------------------------------
     # Aplica filtros e calcula estatísticas para Thai House
-    filter_thai_real_fech = FilterSelection(place_select=['Thai house'], stage_select=['Realizado', 'Fechado'], year_select=year_select)
+    filter_thai_real_fech = FilterSelection(place_select=['Thai house'], stage_select=stage_select, year_select=year_select)
     thai_loc = filter_thai_real_fech.run_filter(df, filter_place=True, filter_stage=True, filter_year=True)
     thai_loc = thai_loc.loc[:,["Total convidados previsto", "Valor total previsto",  "Total convidados presentes", "Valor total realizado"]
     ].describe().T
 
     # Aplica filtros e calcula estatísticas para River
-    filter_river_real_fech = FilterSelection(place_select=['River'], stage_select=['Realizado', 'Fechado'], year_select=year_select)
+    filter_river_real_fech = FilterSelection(place_select=['River'], stage_select=stage_select, year_select=year_select)
     river_loc = filter_river_real_fech.run_filter(df, filter_place=True, filter_stage=True, filter_year=True)
     river_loc = river_loc.loc[:,["Total convidados previsto", "Valor total previsto",  "Total convidados presentes", "Valor total realizado"]
     ].describe().T
