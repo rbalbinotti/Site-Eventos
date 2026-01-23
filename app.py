@@ -341,7 +341,6 @@ with tab_detalhes:
     ].describe().T
     
     st.subheader(f'Estatísticas Descritivas Agregadas em {year_select}', divider='gray')
-    st.caption('Observação: Datas no formato Mês/Dia/Ano')
     col_stat_thai, col_stat_river = st.columns(2)
 
     with col_stat_thai:
