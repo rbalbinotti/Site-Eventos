@@ -233,21 +233,6 @@ def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: s
             df_anos_ant = pd.DataFrame(columns=columns_manter)
 
         if not df_anos_ant.empty:
-            # Formata datas para o padrão do DataFrame atual
-            df_anos_ant["data_contato"] = pd.to_datetime(
-                df_anos_ant["data_contato"]
-            ).dt.strftime("%d/%m/%Y")
-            df_anos_ant["data_evento"] = pd.to_datetime(
-                df_anos_ant["data_evento"]
-            ).dt.strftime("%d/%m/%Y")
-
-            df_anos_ant.insert(1, "local", "Thai House")
-
-            # Padroniza nomes de colunas
-            df_anos_ant.rename(
-                columns={"resp_evento": "resp", "qtde_convidados": "convidados_previstos"},
-                inplace=True,
-            )
 
             # Mantém apenas as colunas necessárias para concatenação
             df_anos_ant = df_anos_ant.drop(
@@ -270,7 +255,13 @@ def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: s
         ]
         df_thai[string_cols] = df_thai[string_cols].fillna("Não Informado")
 
-        df_thai["horário_início"] = df_thai["horário_início"].fillna("00:00")
+        # Formata datas para o padrão do DataFrame atual
+        df_thai["data_contato"] = pd.to_datetime(
+            df_thai["data_contato"]
+        ).dt.strftime("%d/%m/%Y")
+        df_thai["data_evento"] = pd.to_datetime(
+            df_thai["data_evento"]
+        ).dt.strftime("%d/%m/%Y")
 
         # Preenche numéricos ausentes com 0.0 e 0, respectivamente
         df_thai[columns_float] = df_thai[columns_float].fillna(0.0).astype(float)
@@ -280,15 +271,15 @@ def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: s
         df_thai["horário_início"] = df_thai["horário_início"].str.replace(
             ";", ":", regex=False
         )
+        
+        df_thai["horário_início"] = df_thai["horário_início"].str.replace('Nat', '00:00', regex=False)
+        
         df_thai["data_contato"] = pd.to_datetime(
             df_thai["data_contato"], errors="coerce", dayfirst=True
         )
         df_thai["data_evento"] = pd.to_datetime(
             df_thai["data_evento"], errors="coerce", dayfirst=True
         )
-        df_thai["horário_início"] = pd.to_datetime(
-            df_thai["horário_início"], format="%H:%M", errors="coerce"
-        ).dt.time
 
         # Preenche 'data_contato' com 'data_evento' onde for nulo
         df_thai["data_contato"] = df_thai.data_contato.fillna(df_thai.data_evento)
