@@ -2,7 +2,7 @@ from __future__ import print_function
 from datetime import datetime as dt
 
 import locale
-from mod_func import colunas_lower_replace, whitespace_remover  # Funções auxiliares (biblioteca local)
+from arq_py.mod_func import colunas_lower_replace, whitespace_remover  # Funções auxiliares (biblioteca local)
 import numpy as np
 import pandas as pd
 import warnings
@@ -116,8 +116,8 @@ def format_cols(df: pd.DataFrame, columns_int: list = None, columns_float: list 
     if not columns_date:
         columns_date = ["data_contato", "data_evento"]
 
-    df[columns_int] = df[columns_int].apply(lambda x: x.astype(int))
-    df[columns_float] = df[columns_float].apply(lambda x: x.astype(float))
+    df[columns_int] = df[columns_int].astype(float).astype("uint16")
+    df[columns_float] = df[columns_float].astype("float32").round()
     df[columns_date] = df[columns_date].apply(
         lambda x: pd.to_datetime(x, errors="coerce", dayfirst=True)
     )
@@ -185,17 +185,17 @@ def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: s
 
 
     # 1. EXTRAÇÃO (E): CHAMADA DA FUNÇÃO DE CONEXÃO
-    # A variável df_thai recebe os dados do Google Sheets
-    df_thai = get_google_sheet_data(sheet_title, worksheet_name, local)
+    # A variável df_completo recebe os dados do Google Sheets
+    X = get_google_sheet_data(sheet_title, worksheet_name, local)
 
     # VERIFICAÇÃO BÁSICA
-    if df_thai.empty:
+    if X.empty:
         print("Erro ao carregar dados ou DataFrame vazio.")
-        return df_thai
+        return X
     else:
         # --- Organização e Conversão de Tipos (DataFrame Atual) ---
         # Renomeia colunas para minúsculas e substitui espaços por underscores
-        colunas_lower_replace(df_thai)
+        colunas_lower_replace(X)
 
         columns_manter = [
             "local", "kids_presentes", "sinal", "resp", "empresa", "cardápio", "kids",
@@ -204,24 +204,43 @@ def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: s
             "data_contato", "observação", "data_evento", "preço", "tipo", "contato",
             "manter_total_previsto",
         ]
+        columns_int = ["kids_presentes", "kids", "convidados_presentes"]
+        columns_float = ["sinal", "preço_kids", "valor_extra"]
+        numeric_cols = columns_float + columns_int + ["convidados_previstos", "preço"]
 
-        columns_int = ["kids_presentes", "kids", "convidados_presentes", "convidados_previstos"]
-        columns_float = ["sinal", "preço_kids", "valor_extra", "preço"]
-        numeric_cols = columns_float + columns_int
-
-        df_thai = df_thai[columns_manter].copy()
+        X = X[columns_manter].copy()
 
         # Converte 'manter_total_previsto' para booleano
-        df_thai["manter_total_previsto"] = np.where(
-            df_thai["manter_total_previsto"] == "FALSE", 0, 1
+        X["manter_total_previsto"] = np.where(
+            X["manter_total_previsto"] == "FALSE", 0, 1
         ).astype(bool)
 
-        df_thai = df_thai.replace("", np.nan)
+        X = X.replace("", np.nan)
 
         # Converte colunas numéricas de string (com vírgula) para float
-        df_thai[numeric_cols] = (
-            df_thai[numeric_cols].apply(lambda x: x.str.replace(",", ".")).astype(float)
+        X[numeric_cols] = (
+            X[numeric_cols].apply(lambda x: x.str.replace(",", ".")).astype(float)
         )
+        
+        # Preencher colunas "convidados_previstos", "preço" com valores médios por ano
+        mean_cov_prev_ano = round(X['convidados_previstos'].mean())
+        mean_preco_ano = X['preço'].mean().astype(float)
+
+        # Preenche strings ausentes com "Não Informado"
+        string_cols = [
+            "local", "situação", "tipo", "empresa", "contato", "telefone", 
+            "email", "cardápio", "forma_de_pagamento", "observação",
+        ]
+        X[string_cols] = X[string_cols].fillna("Não Informado")
+
+        X["horário_início"] = X["horário_início"].fillna("00:00")
+
+        # Preenche numéricos ausentes
+        X['preço'] = X['preço'].fillna(mean_preco_ano)
+        X['convidados_previstos'] = X['convidados_previstos'].fillna(mean_cov_prev_ano)
+
+        X[columns_int] = X[columns_int].fillna(int(0))
+        X[columns_float] = X[columns_float].fillna(0)
 
 
         # Leitura do dados dos anos anteriores
@@ -233,6 +252,21 @@ def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: s
             df_anos_ant = pd.DataFrame(columns=columns_manter)
 
         if not df_anos_ant.empty:
+            # Formata datas para o padrão do DataFrame atual
+            df_anos_ant["data_contato"] = pd.to_datetime(
+                df_anos_ant["data_contato"]
+            ).dt.strftime("%d/%m/%Y")
+            df_anos_ant["data_evento"] = pd.to_datetime(
+                df_anos_ant["data_evento"]
+            ).dt.strftime("%d/%m/%Y")
+
+            # df_anos_ant.insert(1, "local", "Thai House")
+
+            # Padroniza nomes de colunas
+            df_anos_ant.rename(
+                columns={"resp_evento": "resp", "qtde_convidados": "convidados_previstos"},
+                inplace=True,
+            )
 
             # Mantém apenas as colunas necessárias para concatenação
             df_anos_ant = df_anos_ant.drop(
@@ -242,82 +276,66 @@ def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: s
             df_anos_ant["manter_total_previsto"] = True
 
         # Concatena os DataFrames
-        df_thai = pd.concat([df_anos_ant, df_thai], axis=0, join="outer", ignore_index=True)
+        df_completo = pd.concat([df_anos_ant, X], axis=0, join="outer", ignore_index=True)
 
-        df_thai.reset_index(drop=True, inplace=True)
+        df_completo.reset_index(drop=True, inplace=True)
+
+        # Converte colunas numéricas
+        df_completo[numeric_cols] = df_completo[numeric_cols].astype(float)
 
         # --- Tratamento de Missing Values e Tipos (DataFrame Combinado) ---
 
-        # Preenche strings ausentes com "Não Informado"
-        string_cols = [
-            "local", "situação", "tipo", "empresa", "contato", "telefone", 
-            "email", "cardápio", "forma_de_pagamento", "observação",
-        ]
-        df_thai[string_cols] = df_thai[string_cols].fillna("Não Informado")
-
-        # Formata datas para o padrão do DataFrame atual
-        df_thai["data_contato"] = pd.to_datetime(
-            df_thai["data_contato"]
-        ).dt.strftime("%d/%m/%Y")
-        df_thai["data_evento"] = pd.to_datetime(
-            df_thai["data_evento"]
-        ).dt.strftime("%d/%m/%Y")
-
-        # Preenche numéricos ausentes com 0.0 e 0, respectivamente
-        df_thai[columns_float] = df_thai[columns_float].fillna(0.0).astype(float)
-        df_thai[columns_int] = df_thai[columns_int].fillna(0).astype(int)
-
         # Tratamento e conversão de colunas de Data/Hora
-        df_thai["horário_início"] = df_thai["horário_início"].str.replace(
+        df_completo["horário_início"] = df_completo["horário_início"].str.replace(
             ";", ":", regex=False
         )
-        
-        df_thai["horário_início"] = df_thai["horário_início"].str.replace('Nat', '00:00', regex=False)
-        
-        df_thai["data_contato"] = pd.to_datetime(
-            df_thai["data_contato"], errors="coerce", dayfirst=True
+        df_completo["data_contato"] = pd.to_datetime(
+            df_completo["data_contato"], errors="coerce", dayfirst=True
         )
-        df_thai["data_evento"] = pd.to_datetime(
-            df_thai["data_evento"], errors="coerce", dayfirst=True
+        df_completo["data_evento"] = pd.to_datetime(
+            df_completo["data_evento"], errors="coerce", dayfirst=True
         )
+        # df_completo["horário_início"] = pd.to_datetime(
+        #     df_completo["horário_início"], format="%H:%M", errors="coerce"
+        # ).dt.time
 
         # Preenche 'data_contato' com 'data_evento' onde for nulo
-        df_thai["data_contato"] = df_thai.data_contato.fillna(df_thai.data_evento)
+        df_completo["data_contato"] = df_completo.data_contato.fillna(df_completo.data_evento)
 
         # Preenche 'data_evento' futuro para nulos
         dia = dt.today().date() + pd.DateOffset(days=20)
-        df_thai["data_evento"] = pd.to_datetime(df_thai.data_evento.fillna(dia))
+        df_completo["data_evento"] = pd.to_datetime(df_completo.data_evento.fillna(dia))
 
         # Aplica os cálculos automáticos na base consolidada
-        df_thai = calculos_automaticos(df_thai)
+        df_completo = calculos_automaticos(df_completo)
 
         # --- Organização e Padronização de Strings ---
 
         # Remove caracteres especiais do 'contato' (mantendo apenas letras e números)
         char_esp = re.compile(r"\W+", re.MULTILINE)
-        df_thai["contato"] = df_thai.contato.replace(char_esp, " ", regex=True)
+        df_completo["contato"] = df_completo.contato.replace(char_esp, " ", regex=True)
 
         # Limpa, padroniza caixa baixa e capitaliza (título) todas as colunas string
-        df_thai = df_thai.apply(
+        df_completo = df_completo.apply(
             lambda x: x.astype(str).str.strip().str.casefold().str.capitalize()
         )
 
         # Remove múltiplos espaços em branco
         regex_blank = re.compile(r"\s+", flags=re.MULTILINE)
-        df_thai = df_thai.apply(lambda x: x.str.replace(regex_blank, " ", regex=True))
+        df_completo = df_completo.apply(lambda x: x.str.replace(regex_blank, " ", regex=True))
 
         # Remove a palavra "Menu" do cardápio e aplica título
         regex_menu = re.compile(r"[Menu]{4}(\s)?", flags=re.MULTILINE)
-        df_thai["cardápio"] = df_thai.cardápio.str.replace(
+        df_completo["cardápio"] = df_completo.cardápio.str.replace(
             regex_menu, "", regex=True
         ).str.title()
 
-        df_thai["empresa"] = df_thai["empresa"].str.title()
-        df_thai["contato"] = df_thai["contato"].str.title()
+        df_completo["empresa"] = df_completo["empresa"].str.title()
+        df_completo["contato"] = df_completo["contato"].str.title()
 
         # Padroniza nomes de cardápios com erros de digitação comuns
-        df_thai["cardápio"] = (
-            df_thai.cardápio.replace("Ko Lanta", "Koh Lanta")
+        df_completo["cardápio"] = (
+            df_completo.cardápio.replace("Ko Lanta", "Koh Lanta")
             .replace("Ko Pee Pee", "Koh Pee Pee")
             .replace("Ko Sak", "Koh Sak")
             .replace("Dia Dos Namorados", "Namorados")
@@ -334,23 +352,25 @@ def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: s
         menu_completo = list(set(item.lower() for item in (fast + padrao + economico + nao_definido + card_river)))
 
         # Substitui cardápios que não estão na lista de padronização por "Especial"
-        condition = ~df_thai["cardápio"].str.lower().isin(menu_completo)
-        df_thai.loc[condition, "cardápio"] = "Especial"
+        condition = ~df_completo["cardápio"].str.lower().isin(menu_completo)
+        df_completo.loc[condition, "cardápio"] = "Especial"
 
         # Ordena o DataFrame pela data do evento
-        df_thai = df_thai.sort_values("data_evento", ignore_index=True)
+        df_completo = df_completo.sort_values("data_evento", ignore_index=True)
 
         # Salva o DataFrame finalizado
-        # df_thai.to_excel(r"dados/df_thai_finalizado.xlsx", index=False)
+        # df_completo.to_excel(r"dados/df_thai_finalizado.xlsx", index=False)
 
         
         
         print('Leitura e processamento realizados.')
 
-        return format_cols(df_thai)
+        return format_cols(df_completo)
 
 if __name__ == "__main__":
-    print(run_full_etl())
+    df = run_full_etl(
+    sheet_title="Prog_eventos_thai_house", worksheet_name="Completa", local=True
+)
 #     final_df = run_full_etl()
 #     if final_df is not None:
 #         print(final_df.head())
