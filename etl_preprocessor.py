@@ -2,7 +2,6 @@ from __future__ import print_function
 from datetime import datetime as dt
 
 import locale
-from arq_py.mod_func import colunas_lower_replace, whitespace_remover  # Funções auxiliares (biblioteca local)
 import numpy as np
 import pandas as pd
 import warnings
@@ -10,6 +9,11 @@ import re
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import streamlit as st
+
+try:
+    from arq_py.mod_func import colunas_lower_replace, whitespace_remover  # Funções auxiliares (biblioteca local)
+except:
+    from mod_func import colunas_lower_replace, whitespace_remover 
 
 warnings.filterwarnings("ignore")
 
