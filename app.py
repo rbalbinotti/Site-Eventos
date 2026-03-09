@@ -64,12 +64,20 @@ st.title("Análise e Gestão de Eventos 📊")
 currentDate = date.today()
 currentYear = currentDate.year
 
-@st.cache_data
-def load_data():
-    """Roda o processo completo de ETL e carrega os dados brutos."""
-    df = run_full_etl(sheet_title="Prog_eventos_thai_house", worksheet_name="Completa", local=False)
-    return df
 
+try:
+    @st.cache_data
+    def load_data():
+        """Roda o processo completo de ETL e carrega os dados brutos."""
+        df = run_full_etl(sheet_title="Prog_eventos_thai_house", worksheet_name="Completa", local=False)
+        return df
+except:
+    @st.cache_data
+    def load_data():
+        """Roda o processo completo de ETL e carrega os dados brutos."""
+        df = run_full_etl(sheet_title="Prog_eventos_thai_house", worksheet_name="Completa", local=True)
+        return df
+    
 # Carrega os dados
 df_load = load_data()
 

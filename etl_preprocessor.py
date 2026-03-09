@@ -190,7 +190,10 @@ def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: s
 
     # 1. EXTRAÇÃO (E): CHAMADA DA FUNÇÃO DE CONEXÃO
     # A variável df_completo recebe os dados do Google Sheets
-    X = get_google_sheet_data(sheet_title, worksheet_name, local)
+    try:
+        X = get_google_sheet_data(sheet_title, worksheet_name, local=True)
+    except:
+        X = get_google_sheet_data(sheet_title, worksheet_name, local=False)
 
     # VERIFICAÇÃO BÁSICA
     if X.empty:
