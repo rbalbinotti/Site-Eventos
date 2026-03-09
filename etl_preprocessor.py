@@ -229,34 +229,60 @@ def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: s
             X[numeric_cols].apply(lambda x: x.str.replace(",", ".")).astype(float)
         )
         
-        # Preencher colunas "convidados_previstos", "preço" com valores médios por ano
-        mean_cov_prev_ano = round(X['convidados_previstos'].mean())
-        mean_preco_ano = X['preço'].mean().astype(float)
-
         # Preenche strings ausentes com "Não Informado"
         string_cols = [
             "local", "situação", "tipo", "empresa", "contato", "telefone", 
             "email", "cardápio", "forma_de_pagamento", "observação",
         ]
         X[string_cols] = X[string_cols].fillna("Não Informado")
+        X[string_cols] = (X[string_cols].apply(lambda x: x.str.lower()))
 
         X["horário_início"] = X["horário_início"].fillna("00:00")
 
-        # Preenche numéricos ausentes
-        X['preço'] = X['preço'].fillna(mean_preco_ano)
-        X['convidados_previstos'] = X['convidados_previstos'].fillna(mean_cov_prev_ano)
+        # Tratamento preços ausentes
+        media_preco_thai = X.query('local == "thai house"')['preço'].mean().astype(float).round()
+        media_preco_river = X.query('local == "river"')['preço'].mean().astype(float).round()
+        X['preço'] = np.where(
+            (X["local"] == "thai house") & (X['preço'].isna()), 
+            media_preco_thai, 
+            np.where(
+                (X["local"] == "river") & (X['preço'].isna()), 
+            media_preco_river, 
+            X['preço']
+            )
+        )
+        
+        # Tratamento convidados ausentes
+        media_convidados_thai = X.query('local == "thai house"')['convidados_previstos'].mean().round()
+        media_convidados_river = X.query('local == "river"')['convidados_previstos'].mean().round()
+        X['convidados_previstos'] = np.where(
+            (X['local'] == 'thai house') & (X["convidados_previstos"].isna()),
+            media_convidados_thai,
+            np.where(
+                (X['local'] == 'river') & (X['convidados_previstos'].isna()), 
+                media_convidados_river,
+                X['convidados_previstos']
+                )
+        )
 
+        # Demais dados ausentes preenchidos com zero
         X[columns_int] = X[columns_int].fillna(int(0))
         X[columns_float] = X[columns_float].fillna(0)
 
 
         # Leitura do dados dos anos anteriores
         try:
-            df_anos_ant = get_google_sheet_data(sheet_title='dados_anos_anteriores', worksheet_name='Sheet1', local=local)
+            df_anos_ant = get_google_sheet_data(sheet_title='dados_anos_anteriores', worksheet_name='Sheet1', local=True)
 
         except FileNotFoundError:
-            print(f"Erro: Arquivo de dados de anos anteriores não encontrado. Continuando com DataFrame atual apenas.")
-            df_anos_ant = pd.DataFrame(columns=columns_manter)
+            print(f"Erro: Arquivo local de configuração não encontrado.")
+            df_anos_ant = get_google_sheet_data(sheet_title='dados_anos_anteriores', worksheet_name='Sheet1', local=False)
+
+        else:
+            print("Dados carregados com sucesso do arquivo local.")
+
+        finally:
+            print("Processo de carregamento concluído.")
 
         if not df_anos_ant.empty:
             # Formata datas para o padrão do DataFrame atual
@@ -267,7 +293,7 @@ def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: s
                 df_anos_ant["data_evento"]
             ).dt.strftime("%d/%m/%Y")
 
-            # df_anos_ant.insert(1, "local", "Thai House")
+            # df_anos_ant.insert(1, "local", "thai house")
 
             # Padroniza nomes de colunas
             df_anos_ant.rename(
@@ -324,7 +350,7 @@ def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: s
 
         # Limpa, padroniza caixa baixa e capitaliza (título) todas as colunas string
         df_completo = df_completo.apply(
-            lambda x: x.astype(str).str.strip().str.casefold().str.capitalize()
+            lambda col: col.astype(str).str.strip().str.casefold().str.capitalize() if col.name != "email" else col
         )
 
         # Remove múltiplos espaços em branco
@@ -365,11 +391,6 @@ def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: s
         # Ordena o DataFrame pela data do evento
         df_completo = df_completo.sort_values("data_evento", ignore_index=True)
 
-        # Salva o DataFrame finalizado
-        # df_completo.to_excel(r"dados/df_thai_finalizado.xlsx", index=False)
-
-        
-        
         print('Leitura e processamento realizados.')
 
         return format_cols(df_completo)
@@ -378,6 +399,4 @@ if __name__ == "__main__":
     df = run_full_etl(
     sheet_title="Prog_eventos_thai_house", worksheet_name="Completa", local=True
 )
-#     final_df = run_full_etl()
-#     if final_df is not None:
-#         print(final_df.head())
+    print(df.head())
