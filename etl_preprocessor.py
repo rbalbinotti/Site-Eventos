@@ -203,6 +203,7 @@ def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: s
         # --- Organização e Conversão de Tipos (DataFrame Atual) ---
         # Renomeia colunas para minúsculas e substitui espaços por underscores
         colunas_lower_replace(X)
+        whitespace_remover(X)
 
         columns_manter = [
             "local", "kids_presentes", "sinal", "resp", "empresa", "cardápio", "kids",
