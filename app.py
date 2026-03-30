@@ -84,7 +84,7 @@ df_load = load_data()
 # Pré-processamento e filtragem inicial
 preprocessor = DataProcess()
 # Processa e filtra dados para incluir apenas eventos a partir de 2022 (Ano > 2021)
-df = preprocessor.process_data(df_load).query('`Ano evento` > 2021') 
+df = preprocessor.process_data(df_load).query('`Data evento` >= 2022') 
 
 # 4. Barra Lateral e Configurações de Filtro
 # -----------------------------------------------------------------------------
