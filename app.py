@@ -84,10 +84,14 @@ df_load = load_data()
 # Pré-processamento e filtragem inicial
 preprocessor = DataProcess()
 # Processa e filtra dados para incluir apenas eventos a partir de 2022 (Ano > 2021)
-df = preprocessor.process_data(df_load).query('`Data evento` >= 2022') 
+df = preprocessor.process_data(df_load).query("`Data evento` >= '2022-01-01'") 
 
-# 4. Barra Lateral e Configurações de Filtro
+# Formata Colunas para maiúscula e remove "_"
+df.columns = [col.capitalize().replace("_", " ") for col in df.columns]
+# print(df.columns)
+
 # -----------------------------------------------------------------------------
+# 4. Barra Lateral e Configurações de Filtro
 
 # Cria listas únicas para as opções de filtro
 local_list = df['Local'].unique().tolist()
