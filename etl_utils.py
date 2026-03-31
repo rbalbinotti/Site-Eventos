@@ -51,7 +51,7 @@ class DataProcess:
         Nome da coluna de datas a ser processada (padrão: 'data_evento').
     """
 
-    def __init__(self, cat_col: str = 'etapa', data_col: str = 'data_evento'):
+    def __init__(self, cat_col: str = "etapa", data_col: str = "data_evento"):
         """
         Inicializa a classe DataProcess.
 
@@ -88,7 +88,7 @@ class DataProcess:
         # Garante que a coluna de data esteja no formato datetime, essencial para extração
         df_copy[self.data_col] = pd.to_datetime(df_copy[self.data_col])
         # Transforma a coluna em tipo 'category' para otimizar memória e permitir codificação
-        df_copy[self.cat_col] = df_copy[self.cat_col].astype('category')
+        df_copy[self.cat_col] = df_copy[self.cat_col].astype("category")
         # Gera códigos numéricos únicos para cada categoria
         df_copy["cod_" + self.cat_col] = df_copy[self.cat_col].cat.codes
         return df_copy
@@ -108,9 +108,9 @@ class DataProcess:
             DataFrame com as colunas 'ano_evento', 'mes_evento' e 'dia_semana' adicionadas.
         """
         df_copy = df.copy()
-        df_copy['ano_evento'] = df_copy[self.data_col].dt.year  # Extrai o ano
+        df_copy["ano_evento"] = df_copy[self.data_col].dt.year  # Extrai o ano
         # Extrai o mês abreviado (e.g., 'Jan', 'Fev'), usando o locale 'pt_BR'
-        df_copy['mes_evento'] = df_copy[self.data_col].dt.strftime('%b')
+        df_copy["mes_evento"] = df_copy[self.data_col].dt.strftime("%b")
         # Extrai o nome completo do dia da semana (e.g., 'Segunda-feira'), usando o locale 'pt_BR'
         df_copy["dia_semana"] = df_copy[self.data_col].dt.strftime("%A")
         return df_copy
@@ -139,7 +139,7 @@ class DataProcess:
         # Aplica a extração das informações de data
         df_processed = self._process_date(df_processed)
         # Formata os nomes das colunas para melhor visualização (e.g., 'data_evento' -> 'Data evento')
-        df_processed.columns = df_processed.columns.str.replace('_', ' ').str.capitalize()
+        # df_processed.columns = df_processed.columns.str.replace('_', ' ').str.capitalize()
 
         return df_processed
 
@@ -159,7 +159,12 @@ class FilterSelection:
         Ano específico para filtro (e.g., 2024).
     """
 
-    def __init__(self, place_select: list[str] = None, stage_select: list[str] = None, year_select: int = None):
+    def __init__(
+        self,
+        place_select: list[str] = None,
+        stage_select: list[str] = None,
+        year_select: int = None,
+    ):
         """
         Inicializa a classe FilterSelection com os critérios de filtro.
         """
@@ -203,30 +208,38 @@ class FilterSelection:
         # 1. Filtro por Local
         if filter_place and self.place_select:
             # Filtra onde a coluna 'Local' está na lista 'place_select'
-            df_filtered = df_filtered[df_filtered['Local'].isin(self.place_select)]
+            df_filtered = df_filtered[df_filtered["Local"].isin(self.place_select)]
         elif filter_place:
             # Mensagem de aviso se o filtro foi ativado, mas os critérios estão vazios
-            print("Atenção: 'filter_place' é True, mas 'place_select' está vazio ou é None. Nenhum filtro de local aplicado.")
+            print(
+                "Atenção: 'filter_place' é True, mas 'place_select' está vazio ou é None. Nenhum filtro de local aplicado."
+            )
 
         # 2. Filtro por Etapa
         if filter_stage and self.stage_select:
             # Filtra onde a coluna 'Etapa' está na lista 'stage_select'
-            df_filtered = df_filtered[df_filtered['Etapa'].isin(self.stage_select)]
+            df_filtered = df_filtered[df_filtered["Etapa"].isin(self.stage_select)]
         elif filter_stage:
-            print("Atenção: 'filter_stage' é True, mas 'stage_select' está vazio ou é None. Nenhum filtro de etapa aplicado.")
+            print(
+                "Atenção: 'filter_stage' é True, mas 'stage_select' está vazio ou é None. Nenhum filtro de etapa aplicado."
+            )
 
         # 3. Filtro por Ano
         if filter_year and self.year_select is not None:
             # Filtra onde a coluna 'Ano evento' é igual ao 'year_select'
-            df_filtered = df_filtered[df_filtered['Ano evento'] == self.year_select]
+            df_filtered = df_filtered[df_filtered["Ano evento"] == self.year_select]
         elif filter_year:
             # O filtro por ano deve ser mais rígido, pois a falta de um ano pode indicar erro
-            print("Atenção: 'filter_year' é True, mas 'year_select' é None. Nenhum filtro de ano aplicado.")
+            print(
+                "Atenção: 'filter_year' é True, mas 'year_select' é None. Nenhum filtro de ano aplicado."
+            )
 
         return df_filtered
 
 
-def dre(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def dre(
+    df: pd.DataFrame,
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Gera quatro relatórios consolidados (DRE - Demonstração do Resultado do Exercício)
     para análise de desempenho financeiro e de participação em eventos.
@@ -298,7 +311,10 @@ def dre(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.
     )
     # Renomeia os valores da coluna 'tipo'
     df_melted_convidados["tipo"] = df_melted_convidados["tipo"].replace(
-        {"Total convidados previsto": "Previsto", "Total convidados presentes": "Presentes"}
+        {
+            "Total convidados previsto": "Previsto",
+            "Total convidados presentes": "Presentes",
+        }
     )
 
     # 3.3. Relatório de Contagem de Eventos (por Etapa e Local)

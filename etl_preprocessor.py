@@ -11,84 +11,89 @@ from oauth2client.service_account import ServiceAccountCredentials
 import streamlit as st
 
 try:
-    from arq_py.mod_func import colunas_lower_replace, whitespace_remover  # Funções auxiliares (biblioteca local)
+    from arq_py.mod_func import (
+        colunas_lower_replace,
+        whitespace_remover,
+    )  # Funções auxiliares (biblioteca local)
 except:
-    from mod_func import colunas_lower_replace, whitespace_remover 
+    from mod_func import colunas_lower_replace, whitespace_remover
 
 warnings.filterwarnings("ignore")
-
-
 
 # -------------------------------------------------------------------------
 # FUNÇÃO DE EXTRAÇÃO DE DADOS (E do ETL) - USO EXCLUSIVO DO STREAMLIT CLOUD
 # -------------------------------------------------------------------------
 # O cache evita que a planilha seja lida novamente a cada interação do usuário.
-#@st.cache_data(ttl=600) # ttl=600 significa que o cache dura 10 minutos
-def get_google_sheet_data(sheet_title: str, worksheet_name: str, local: bool = False) -> pd.DataFrame:
+# @st.cache_data(ttl=600) # ttl=600 significa que o cache dura 10 minutos
+def get_google_sheet_data(
+    sheet_title: str, worksheet_name: str, local: bool = False
+) -> pd.DataFrame:
 
     if local:
 
         """
         Autentica no Google Sheets e carrega o DataFrame.
         """
-        service_account = '/home/rb/Dropbox/thai_house/thai/cred/credential_thai.json'
+        service_account = "/home/rb/Dropbox/thai_house/thai/cred/credential_thai.json"
 
         # 2. Autentica o gspread LENDO DIRETAMENTE DO ARQUIVO
         try:
-            gc = gspread.service_account(filename=service_account) 
+            gc = gspread.service_account(filename=service_account)
         except FileNotFoundError:
             # Use um print simples ou raise/logging, já que st.error só funciona no ambiente Streamlit
-            print(f"Erro: O arquivo de credenciais não foi encontrado em {service_account}")
+            print(
+                f"Erro: O arquivo de credenciais não foi encontrado em {service_account}"
+            )
             return pd.DataFrame()
         except Exception as e:
             print(f"Erro ao autenticar com gspread: {e}")
             return pd.DataFrame()
-        
+
         # 3. Abre a planilha e a aba
         # ATENÇÃO: Substitua os placeholders pelos nomes reais da sua planilha e aba!
         sh = gc.open(sheet_title)
         worksheet = sh.worksheet(worksheet_name)
-        
+
         # 4. Obtém todos os dados (lista de listas)
         data = worksheet.get_all_values()
-        
+
         # 5. Cria o DataFrame (primeira linha como cabeçalho, resto como dados)
         df = pd.DataFrame(data[1:], columns=data[0])
-        
-        print(f'Dados carregados de: {sheet_title} - {worksheet_name}')
+
+        print(f"Dados carregados de: {sheet_title} - {worksheet_name}")
         return df
-    
+
     else:
-          
+
         """
         Autentica no Google Sheets usando st.secrets e carrega o DataFrame.
         """
 
         gcp_service_account = st.secrets["gcp_service_account"]
-        
-        # 1. Carrega as credenciais do Streamlit Secrets 
+
+        # 1. Carrega as credenciais do Streamlit Secrets
         # (Nome da chave deve ser o mesmo usado no seu .streamlit/secrets.toml)
         try:
             gcp_service_account_dict = dict(st.secrets["gcp_service_account"])
         except FileNotFoundError:
             st.error("Erro: O arquivo .streamlit/secrets.toml não foi configurado.")
             return pd.DataFrame()
-            
+
         # 2. Autentica o gspread
         gc = gspread.service_account_from_dict(gcp_service_account_dict)
-        
+
         # 3. Abre a planilha e a aba
         # ATENÇÃO: Substitua os placeholders pelos nomes reais da sua planilha e aba!
         sh = gc.open(sheet_title)
         worksheet = sh.worksheet(worksheet_name)
-        
+
         # 4. Obtém todos os dados (lista de listas)
         data = worksheet.get_all_values()
-        
+
         # 5. Cria o DataFrame (primeira linha como cabeçalho, resto como dados)
         df = pd.DataFrame(data[1:], columns=data[0])
-        
-        print(f'Dados carregados de: {sheet_title} - {worksheet_name}')
+
+        print(f"Dados carregados de: {sheet_title} - {worksheet_name}")
         return df
 
 
@@ -96,7 +101,13 @@ def get_google_sheet_data(sheet_title: str, worksheet_name: str, local: bool = F
 # FUNÇÃO PRINCIPAL DE ETL (T e L)
 # -------------------------------------------------------------------------
 
-def format_cols(df: pd.DataFrame, columns_int: list = None, columns_float: list = None, columns_date: list = None):
+
+def format_cols(
+    df: pd.DataFrame,
+    columns_int: list = None,
+    columns_float: list = None,
+    columns_date: list = None,
+):
     if not columns_int:
         columns_int = [
             "kids_presentes",
@@ -106,7 +117,7 @@ def format_cols(df: pd.DataFrame, columns_int: list = None, columns_float: list 
             "total_convidados_previsto",
             "total_convidados_presentes",
         ]
-    
+
     if not columns_float:
         columns_float = [
             "sinal",
@@ -125,8 +136,9 @@ def format_cols(df: pd.DataFrame, columns_int: list = None, columns_float: list 
     df[columns_date] = df[columns_date].apply(
         lambda x: pd.to_datetime(x, errors="coerce", dayfirst=True)
     )
+    df.columns = df.columns.str.lower().str.strip().str.replace(" ", "_")
     return df
-    # return df.columns.str.lower().str.strip().str.replace(" ", "_")
+
 
 # Função para cálculos dependentes da etapa do evento
 def calculos_automaticos(df: pd.DataFrame) -> pd.DataFrame:
@@ -141,7 +153,7 @@ def calculos_automaticos(df: pd.DataFrame) -> pd.DataFrame:
         df["convidados_presentes"] + df["kids_presentes"],
         0,
     )
-    
+
     # Lógica para cálculo do valor realizado
     cond1 = (df["etapa"] == "Realizado") & (df["manter_total_previsto"] == True)
     cond2 = (df["etapa"] == "Realizado") & (df["manter_total_previsto"] == False)
@@ -163,10 +175,15 @@ def calculos_automaticos(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
-def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: str = "Completa", local: bool = False) -> pd.DataFrame:
+
+def run_full_etl(
+    sheet_title: str = "Prog_eventos_thai_house",
+    worksheet_name: str = "Completa",
+    local: bool = False,
+) -> pd.DataFrame:
     """
     Executa a sequência completa de Extração, Transformação e Carregamento (ETL).
-    
+
     :param sheet_title: Título da planilha no Google Sheets.
     :param worksheet_name: Nome da aba/worksheet dentro da planilha.
     :returns: O DataFrame processado final.
@@ -188,7 +205,6 @@ def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: s
     pd.set_option("display.precision", 2)
     pd.set_option("display.max_columns", None)
 
-
     # 1. EXTRAÇÃO (E): CHAMADA DA FUNÇÃO DE CONEXÃO
     # A variável df_completo recebe os dados do Google Sheets
     try:
@@ -206,10 +222,29 @@ def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: s
         colunas_lower_replace(X)
 
         columns_manter = [
-            "local", "kids_presentes", "sinal", "resp", "empresa", "cardápio", "kids",
-            "preço_kids", "convidados_presentes", "convidados_previstos", "forma_de_pagamento",
-            "etapa", "telefone", "valor_extra", "horário_início", "situação", "email",
-            "data_contato", "observação", "data_evento", "preço", "tipo", "contato",
+            "local",
+            "kids_presentes",
+            "sinal",
+            "resp",
+            "empresa",
+            "cardápio",
+            "kids",
+            "preço_kids",
+            "convidados_presentes",
+            "convidados_previstos",
+            "forma_de_pagamento",
+            "etapa",
+            "telefone",
+            "valor_extra",
+            "horário_início",
+            "situação",
+            "email",
+            "data_contato",
+            "observação",
+            "data_evento",
+            "preço",
+            "tipo",
+            "contato",
             "manter_total_previsto",
         ]
         columns_int = ["kids_presentes", "kids", "convidados_presentes"]
@@ -229,55 +264,76 @@ def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: s
         X[numeric_cols] = (
             X[numeric_cols].apply(lambda x: x.str.replace(",", ".")).astype(float)
         )
-        
+
         # Preenche strings ausentes com "Não Informado"
         string_cols = [
-            "local", "situação", "tipo", "empresa", "contato", "telefone", 
-            "email", "cardápio", "forma_de_pagamento", "observação",
+            "local",
+            "situação",
+            "tipo",
+            "empresa",
+            "contato",
+            "telefone",
+            "email",
+            "cardápio",
+            "forma_de_pagamento",
+            "observação",
         ]
         X[string_cols] = X[string_cols].fillna("Não Informado")
-        X[string_cols] = (X[string_cols].apply(lambda x: x.str.lower()))
+        X[string_cols] = X[string_cols].apply(lambda x: x.str.lower())
 
         X["horário_início"] = X["horário_início"].fillna("00:00")
 
         # Tratamento preços ausentes
-        media_preco_thai = X.query('local == "thai house"')['preço'].mean().astype(float).round()
-        media_preco_river = X.query('local == "river"')['preço'].mean().astype(float).round()
-        X['preço'] = np.where(
-            (X["local"] == "thai house") & (X['preço'].isna()), 
-            media_preco_thai, 
-            np.where(
-                (X["local"] == "river") & (X['preço'].isna()), 
-            media_preco_river, 
-            X['preço']
-            )
+        media_preco_thai = (
+            X.query('local == "thai house"')["preço"].mean().astype(float).round()
         )
-        
+        media_preco_river = (
+            X.query('local == "river"')["preço"].mean().astype(float).round()
+        )
+        X["preço"] = np.where(
+            (X["local"] == "thai house") & (X["preço"].isna()),
+            media_preco_thai,
+            np.where(
+                (X["local"] == "river") & (X["preço"].isna()),
+                media_preco_river,
+                X["preço"],
+            ),
+        )
+
         # Tratamento convidados ausentes
-        media_convidados_thai = X.query('local == "thai house"')['convidados_previstos'].mean().round()
-        media_convidados_river = X.query('local == "river"')['convidados_previstos'].mean().round()
-        X['convidados_previstos'] = np.where(
-            (X['local'] == 'thai house') & (X["convidados_previstos"].isna()),
+        media_convidados_thai = (
+            X.query('local == "thai house"')["convidados_previstos"].mean().round()
+        )
+        media_convidados_river = (
+            X.query('local == "river"')["convidados_previstos"].mean().round()
+        )
+        X["convidados_previstos"] = np.where(
+            (X["local"] == "thai house") & (X["convidados_previstos"].isna()),
             media_convidados_thai,
             np.where(
-                (X['local'] == 'river') & (X['convidados_previstos'].isna()), 
+                (X["local"] == "river") & (X["convidados_previstos"].isna()),
                 media_convidados_river,
-                X['convidados_previstos']
-                )
+                X["convidados_previstos"],
+            ),
         )
 
         # Demais dados ausentes preenchidos com zero
         X[columns_int] = X[columns_int].fillna(int(0))
         X[columns_float] = X[columns_float].fillna(0)
 
-
         # Leitura do dados dos anos anteriores
         try:
-            df_anos_ant = get_google_sheet_data(sheet_title='dados_anos_anteriores', worksheet_name='Sheet1', local=True)
+            df_anos_ant = get_google_sheet_data(
+                sheet_title="dados_anos_anteriores", worksheet_name="Sheet1", local=True
+            )
 
         except FileNotFoundError:
             print(f"Erro: Arquivo local de configuração não encontrado.")
-            df_anos_ant = get_google_sheet_data(sheet_title='dados_anos_anteriores', worksheet_name='Sheet1', local=False)
+            df_anos_ant = get_google_sheet_data(
+                sheet_title="dados_anos_anteriores",
+                worksheet_name="Sheet1",
+                local=False,
+            )
 
         else:
             print("Dados carregados com sucesso do arquivo local.")
@@ -298,7 +354,10 @@ def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: s
 
             # Padroniza nomes de colunas
             df_anos_ant.rename(
-                columns={"resp_evento": "resp", "qtde_convidados": "convidados_previstos"},
+                columns={
+                    "resp_evento": "resp",
+                    "qtde_convidados": "convidados_previstos",
+                },
                 inplace=True,
             )
 
@@ -310,7 +369,9 @@ def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: s
             df_anos_ant["manter_total_previsto"] = True
 
         # Concatena os DataFrames
-        df_completo = pd.concat([df_anos_ant, X], axis=0, join="outer", ignore_index=True)
+        df_completo = pd.concat(
+            [df_anos_ant, X], axis=0, join="outer", ignore_index=True
+        )
 
         df_completo.reset_index(drop=True, inplace=True)
 
@@ -334,7 +395,9 @@ def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: s
         # ).dt.time
 
         # Preenche 'data_contato' com 'data_evento' onde for nulo
-        df_completo["data_contato"] = df_completo.data_contato.fillna(df_completo.data_evento)
+        df_completo["data_contato"] = df_completo.data_contato.fillna(
+            df_completo.data_evento
+        )
 
         # Preenche 'data_evento' futuro para nulos
         dia = dt.today().date() + pd.DateOffset(days=20)
@@ -351,12 +414,18 @@ def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: s
 
         # Limpa, padroniza caixa baixa e capitaliza (título) todas as colunas string
         df_completo = df_completo.apply(
-            lambda col: col.astype(str).str.strip().str.casefold().str.capitalize() if col.name != "email" else col
+            lambda col: (
+                col.astype(str).str.strip().str.casefold().str.capitalize()
+                if col.name != "email"
+                else col
+            )
         )
 
         # Remove múltiplos espaços em branco
         regex_blank = re.compile(r"\s+", flags=re.MULTILINE)
-        df_completo = df_completo.apply(lambda x: x.str.replace(regex_blank, " ", regex=True))
+        df_completo = df_completo.apply(
+            lambda x: x.str.replace(regex_blank, " ", regex=True)
+        )
 
         # Remove a palavra "Menu" do cardápio e aplica título
         regex_menu = re.compile(r"[Menu]{4}(\s)?", flags=re.MULTILINE)
@@ -377,13 +446,31 @@ def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: s
         )
 
         # Define listas de cardápios válidos
-        fast = ["kafae", "ma-li", "pi-leh", "ko mattra", "koh kood",]
-        padrao = ["Phuket", "Koh Pee Pee", "Koh Sak", "Koh Lanta", "Ko mai Thon", "ko nom sao"]
+        fast = [
+            "kafae",
+            "ma-li",
+            "pi-leh",
+            "ko mattra",
+            "koh kood",
+        ]
+        padrao = [
+            "Phuket",
+            "Koh Pee Pee",
+            "Koh Sak",
+            "Koh Lanta",
+            "Ko mai Thon",
+            "ko nom sao",
+        ]
         economico = ["koh samet", "krab", "krab"]
         nao_definido = ["Não Informado", "a definir"]
         card_river = ["Sushi-01", "Sushi-02", "Sushi-03"]
 
-        menu_completo = list(set(item.lower() for item in (fast + padrao + economico + nao_definido + card_river)))
+        menu_completo = list(
+            set(
+                item.lower()
+                for item in (fast + padrao + economico + nao_definido + card_river)
+            )
+        )
 
         # Substitui cardápios que não estão na lista de padronização por "Especial"
         condition = ~df_completo["cardápio"].str.lower().isin(menu_completo)
@@ -392,12 +479,13 @@ def run_full_etl(sheet_title: str = "Prog_eventos_thai_house", worksheet_name: s
         # Ordena o DataFrame pela data do evento
         df_completo = df_completo.sort_values("data_evento", ignore_index=True)
 
-        print('Leitura e processamento realizados.')
+        print("Leitura e processamento realizados.")
 
         return format_cols(df_completo)
 
+
 if __name__ == "__main__":
     df = run_full_etl(
-    sheet_title="Prog_eventos_thai_house", worksheet_name="Completa", local=True
-)
+        sheet_title="Prog_eventos_thai_house", worksheet_name="Completa", local=True
+    )
     print(df.head())
