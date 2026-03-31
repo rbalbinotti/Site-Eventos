@@ -322,21 +322,13 @@ def run_full_etl(
         X[columns_float] = X[columns_float].fillna(0)
 
         # Leitura do dados dos anos anteriores
+
         try:
-            df_anos_ant = get_google_sheet_data(
-                sheet_title="dados_anos_anteriores", worksheet_name="Sheet1", local=True
-            )
-
-        except FileNotFoundError:
-            print(f"Erro: Arquivo local de configuração não encontrado.")
-            df_anos_ant = get_google_sheet_data(
-                sheet_title="dados_anos_anteriores",
-                worksheet_name="Sheet1",
-                local=False,
-            )
-
-        else:
-            print("Dados carregados com sucesso do arquivo local.")
+            print("Dados anos anteriores carregados localmente")
+            df_anos_ant = get_google_sheet_data(sheet_title="dados_anos_anteriores", worksheet_name="Sheet1", local=True)
+        except:
+            print("Dados anos anteriores carregados do drive")
+            df_anos_ant = get_google_sheet_data(sheet_title="dados_anos_anteriores", worksheet_name="Sheet1", local=False)
 
         finally:
             print("Processo de carregamento concluído.")
