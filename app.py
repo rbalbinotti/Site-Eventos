@@ -98,11 +98,13 @@ except:
 
 # Carrega os dados
 df_load = load_data()
-# print(df_load)
+
 # Pré-processamento e filtragem inicial
-preprocessor = DataProcess()
-# Processa e filtra dados para incluir apenas eventos a partir de 2022 (Ano > 2021)
-df = preprocessor.process_data(df_load).query("data_evento >= '2022-01-01'")
+preprocessor = DataProcess(cat_col='etapa', data_col="data_evento")
+# Processa
+df_processed = preprocessor.process_data(df_load)
+# Filtra dados para incluir apenas eventos a partir de 2022 (Ano > 2021)
+df = df_processed.query("data_evento >= '2022-01-01'").copy()
 
 # Formata Colunas para maiúscula e remove "_"
 df.columns = [col.capitalize().replace("_", " ") for col in df.columns]
