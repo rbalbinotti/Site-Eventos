@@ -72,30 +72,27 @@ st.title("Análise e Gestão de Eventos 📊")
 currentDate = date.today()
 currentYear = currentDate.year
 
-
-try:
-
-    @st.cache_data
-    def load_data():
-        """Roda o processo completo de ETL e carrega os dados brutos."""
+@st.cache_data
+def load_data():
+    try:
         df = run_full_etl(
             sheet_title="Prog_eventos_thai_house",
             worksheet_name="Completa",
-            local=False,
+            local=False
         )
-        return df
-
-except:
-
-    @st.cache_data
-    def load_data():
-        """Roda o processo completo de ETL e carrega os dados brutos."""
+    except:
+        # Local logic (using local file or env)
         df = run_full_etl(
-            sheet_title="Prog_eventos_thai_house", worksheet_name="Completa", local=True
+            sheet_title="Prog_eventos_thai_house",
+            worksheet_name="Completa",
+            local=True
         )
-        return df
-
+    return df
 
 # Carrega os dados
 df_load = load_data()
+
+if df_load.empty:
+    st.error("Data loaded is empty. Check Google Sheet permissions for the Service Account.")
+
 st.dataframe(df_load)

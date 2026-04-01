@@ -69,12 +69,10 @@ def get_google_sheet_data(
         Autentica no Google Sheets usando st.secrets e carrega o DataFrame.
         """
 
-        gcp_service_account = st.secrets["gcp_service_account"]
-
         # 1. Carrega as credenciais do Streamlit Secrets
         # (Nome da chave deve ser o mesmo usado no seu .streamlit/secrets.toml)
         try:
-            gcp_service_account_dict = dict(gcp_service_account)
+            gcp_service_account_dict = dict(st.secrets["gcp_service_account"])
         except FileNotFoundError:
             st.error("Erro: O arquivo .streamlit/secrets.toml não foi configurado.")
             return pd.DataFrame()
@@ -328,7 +326,7 @@ def run_full_etl(
             df_anos_ant = get_google_sheet_data(sheet_title="dados_anos_anteriores", worksheet_name="Sheet1", local=True)
         except:
             print("Dados anos anteriores carregados do drive")
-            df_anos_ant = get_google_sheet_data(sheet_title="dados_anos_anteriores", worksheet_name="Sheet1", credencials=credentials, local=False)
+            df_anos_ant = get_google_sheet_data(sheet_title="dados_anos_anteriores", worksheet_name="Sheet1", local=False)
 
         finally:
             print("Processo de carregamento concluído.")
