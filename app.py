@@ -59,45 +59,42 @@ px.defaults.height = 768
 #         # Final fallback - usually "C" which is guaranteed to work but lacks UTF-8 support
 #         locale.setlocale(locale.LC_ALL, "C")
 
-# # 2. Configuração da Página Streamlit
-# # -----------------------------------------------------------------------------
+# 2. Configuração da Página Streamlit
+# -----------------------------------------------------------------------------
 
-# st.set_page_config(layout="wide")
-# st.title("Análise e Gestão de Eventos 📊")
+st.set_page_config(layout="wide")
+st.title("Análise e Gestão de Eventos 📊")
 
-# # 3. Processamento de Dados (ETL e Pré-processamento)
-# # -----------------------------------------------------------------------------
+# 3. Processamento de Dados (ETL e Pré-processamento)
+# -----------------------------------------------------------------------------
 
-# # Determina a data e o ano atual para uso nos filtros
-# currentDate = date.today()
-# currentYear = currentDate.year
+# Determina a data e o ano atual para uso nos filtros
+currentDate = date.today()
+currentYear = currentDate.year
 
-# #@st.cache_data
-# def load_data():
-#     try:
-#         df = run_full_etl(
-#             sheet_title="Prog_eventos_thai_house",
-#             worksheet_name="Completa",
-#             local=False
-#         )
-#     except:
-#         df = run_full_etl(
-#             sheet_title="Prog_eventos_thai_house",
-#             worksheet_name="Completa",
-#             local=True
-#         )
-#     return df
+#@st.cache_data
+def load_data():
+    try:
+        df = run_full_etl(
+            sheet_title="Prog_eventos_thai_house",
+            worksheet_name="Completa",
+            local=False
+        )
+    except:
+        df = run_full_etl(
+            sheet_title="Prog_eventos_thai_house",
+            worksheet_name="Completa",
+            local=True
+        )
+    return df
 
-# # Carrega os dados
-# df_load = load_data()
+# Carrega os dados
+df_load = load_data()
 
-# if df_load.empty:
-#     st.error("Data loaded is empty. Check Google Sheet permissions for the Service Account.")
-
-df_load = get_google_sheet_data(sheet_title= "Prog_eventos_thai_house", worksheet_name="Completa", local=False)
+# df_load = get_google_sheet_data(sheet_title= "Prog_eventos_thai_house", worksheet_name="Completa", local=False)
 
 st.dataframe(df_load)
 
-df_old = get_google_sheet_data(sheet_title="dados_anos_anteriores", worksheet_name="Sheet1", local=False)
+# df_old = get_google_sheet_data(sheet_title="dados_anos_anteriores", worksheet_name="Sheet1", local=False)
 
-st.dataframe(df_old)
+# st.dataframe(df_old)

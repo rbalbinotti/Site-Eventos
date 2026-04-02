@@ -187,17 +187,17 @@ def run_full_etl(
     :returns: O DataFrame processado final.
     """
 
-    # Informa o local para formatação de data e moeda
-    try:
-        locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
-    except locale.Error:
-        # Fallback to a common, system-available locale that supports UTF-8
-        # C.UTF-8 is often available in modern environments
-        try:
-            locale.setlocale(locale.LC_ALL, "C.UTF-8")
-        except locale.Error:
-            # Final fallback - usually "C" which is guaranteed to work but lacks UTF-8 support
-            locale.setlocale(locale.LC_ALL, "C")
+    # # Informa o local para formatação de data e moeda
+    # try:
+    #     locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
+    # except locale.Error:
+    #     # Fallback to a common, system-available locale that supports UTF-8
+    #     # C.UTF-8 is often available in modern environments
+    #     try:
+    #         locale.setlocale(locale.LC_ALL, "C.UTF-8")
+    #     except locale.Error:
+    #         # Final fallback - usually "C" which is guaranteed to work but lacks UTF-8 support
+    #         locale.setlocale(locale.LC_ALL, "C")
 
     # Configura o Pandas
     pd.set_option("display.precision", 2)
@@ -207,272 +207,264 @@ def run_full_etl(
     # A variável df_completo recebe os dados do Google Sheets
     try:
         X = get_google_sheet_data(sheet_title, worksheet_name, local=True)
+        y = get_google_sheet_data(sheet_title="dados_anos_anteriores", worksheet_name="Sheet1", local=True)
     except:
         X = get_google_sheet_data(sheet_title, worksheet_name, local=False)
+        y = get_google_sheet_data(sheet_title="dados_anos_anteriores", worksheet_name="Sheet1", local=False)
+    finally:
+        print("\033[91m" + "Processo de carregamento concluído." + "\033[0m")
+        # print("\033[91m" + "Tabela Atual" + "\033[0m" + f"\n{X.head(3)}")
+        # print()
+        # print()
+        # print("\033[91m" + "Tabela Anos Anteriores" + "\033[0m" + f"\n{X.head(3)}")
 
-    # VERIFICAÇÃO BÁSICA
-    if X.empty:
-        st.error
-        st.error(f"Não foi possível encontrar dados em: {sheet_title}")
-        return X
-    # else:
-    #     # --- Organização e Conversão de Tipos (DataFrame Atual) ---
-    #     # Renomeia colunas para minúsculas e substitui espaços por underscores
-    #     colunas_lower_replace(X)
 
-    #     columns_manter = [
-    #         "local",
-    #         "kids_presentes",
-    #         "sinal",
-    #         "resp",
-    #         "empresa",
-    #         "cardápio",
-    #         "kids",
-    #         "preço_kids",
-    #         "convidados_presentes",
-    #         "convidados_previstos",
-    #         "forma_de_pagamento",
-    #         "etapa",
-    #         "telefone",
-    #         "valor_extra",
-    #         "horário_início",
-    #         "situação",
-    #         "email",
-    #         "data_contato",
-    #         "observação",
-    #         "data_evento",
-    #         "preço",
-    #         "tipo",
-    #         "contato",
-    #         "manter_total_previsto",
-    #     ]
-    #     columns_int = ["kids_presentes", "kids", "convidados_presentes"]
-    #     columns_float = ["sinal", "preço_kids", "valor_extra"]
-    #     numeric_cols = columns_float + columns_int + ["convidados_previstos", "preço"]
+    # --- Organização e Conversão de Tipos (DataFrame Atual) ---
+    # Renomeia colunas para minúsculas e substitui espaços por underscores
+    colunas_lower_replace(X)
 
-    #     X = X[columns_manter].copy()
+    columns_manter = [
+        "local",
+        "kids_presentes",
+        "sinal",
+        "resp",
+        "empresa",
+        "cardápio",
+        "kids",
+        "preço_kids",
+        "convidados_presentes",
+        "convidados_previstos",
+        "forma_de_pagamento",
+        "etapa",
+        "telefone",
+        "valor_extra",
+        "horário_início",
+        "situação",
+        "email",
+        "data_contato",
+        "observação",
+        "data_evento",
+        "preço",
+        "tipo",
+        "contato",
+        "manter_total_previsto",
+    ]
+    columns_int = ["kids_presentes", "kids", "convidados_presentes"]
+    columns_float = ["sinal", "preço_kids", "valor_extra"]
+    numeric_cols = columns_float + columns_int + ["convidados_previstos", "preço"]
 
-    #     # Converte 'manter_total_previsto' para booleano
-    #     X["manter_total_previsto"] = np.where(
-    #         X["manter_total_previsto"] == "FALSE", 0, 1
-    #     ).astype(bool)
+    X = X[columns_manter].copy()
 
-    #     X = X.replace("", np.nan)
+    # Converte 'manter_total_previsto' para booleano
+    X["manter_total_previsto"] = np.where(
+        X["manter_total_previsto"] == "FALSE", 0, 1
+    ).astype(bool)
 
-    #     # Converte colunas numéricas de string (com vírgula) para float
-    #     X[numeric_cols] = (
-    #         X[numeric_cols].apply(lambda x: x.str.replace(",", ".")).astype(float)
-    #     )
+    X = X.replace("", np.nan)
 
-    #     # Preenche strings ausentes com "Não Informado"
-    #     string_cols = [
-    #         "local",
-    #         "situação",
-    #         "tipo",
-    #         "empresa",
-    #         "contato",
-    #         "telefone",
-    #         "email",
-    #         "cardápio",
-    #         "forma_de_pagamento",
-    #         "observação",
-    #     ]
-    #     X[string_cols] = X[string_cols].fillna("Não Informado")
-    #     X[string_cols] = X[string_cols].apply(lambda x: x.str.lower())
+    # Converte colunas numéricas de string (com vírgula) para float
+    X[numeric_cols] = (
+        X[numeric_cols].apply(lambda x: x.str.replace(",", ".")).astype(float)
+    )
 
-    #     X["horário_início"] = X["horário_início"].fillna("00:00")
+    # Preenche strings ausentes com "Não Informado"
+    string_cols = [
+        "local",
+        "situação",
+        "tipo",
+        "empresa",
+        "contato",
+        "telefone",
+        "email",
+        "cardápio",
+        "forma_de_pagamento",
+        "observação",
+    ]
+    X[string_cols] = X[string_cols].fillna("Não Informado")
+    X[string_cols] = X[string_cols].apply(lambda x: x.str.lower())
 
-    #     # Tratamento preços ausentes
-    #     media_preco_thai = (
-    #         X.query('local == "thai house"')["preço"].mean().astype(float).round()
-    #     )
-    #     media_preco_river = (
-    #         X.query('local == "river"')["preço"].mean().astype(float).round()
-    #     )
-    #     X["preço"] = np.where(
-    #         (X["local"] == "thai house") & (X["preço"].isna()),
-    #         media_preco_thai,
-    #         np.where(
-    #             (X["local"] == "river") & (X["preço"].isna()),
-    #             media_preco_river,
-    #             X["preço"],
-    #         ),
-    #     )
+    X["horário_início"] = X["horário_início"].fillna("00:00")
 
-    #     # Tratamento convidados ausentes
-    #     media_convidados_thai = (
-    #         X.query('local == "thai house"')["convidados_previstos"].mean().round()
-    #     )
-    #     media_convidados_river = (
-    #         X.query('local == "river"')["convidados_previstos"].mean().round()
-    #     )
-    #     X["convidados_previstos"] = np.where(
-    #         (X["local"] == "thai house") & (X["convidados_previstos"].isna()),
-    #         media_convidados_thai,
-    #         np.where(
-    #             (X["local"] == "river") & (X["convidados_previstos"].isna()),
-    #             media_convidados_river,
-    #             X["convidados_previstos"],
-    #         ),
-    #     )
+    # Tratamento preços ausentes
+    media_preco_thai = (
+        X.query('local == "thai house"')["preço"].mean().astype(float).round()
+    )
+    media_preco_river = (
+        X.query('local == "river"')["preço"].mean().astype(float).round()
+    )
+    X["preço"] = np.where(
+        (X["local"] == "thai house") & (X["preço"].isna()),
+        media_preco_thai,
+        np.where(
+            (X["local"] == "river") & (X["preço"].isna()),
+            media_preco_river,
+            X["preço"],
+        ),
+    )
 
-    #     # Demais dados ausentes preenchidos com zero
-    #     X[columns_int] = X[columns_int].fillna(int(0))
-    #     X[columns_float] = X[columns_float].fillna(0)
+    # Tratamento convidados ausentes
+    media_convidados_thai = (
+        X.query('local == "thai house"')["convidados_previstos"].mean().round()
+    )
+    media_convidados_river = (
+        X.query('local == "river"')["convidados_previstos"].mean().round()
+    )
+    X["convidados_previstos"] = np.where(
+        (X["local"] == "thai house") & (X["convidados_previstos"].isna()),
+        media_convidados_thai,
+        np.where(
+            (X["local"] == "river") & (X["convidados_previstos"].isna()),
+            media_convidados_river,
+            X["convidados_previstos"],
+        ),
+    )
 
-        # Leitura do dados dos anos anteriores
+    # Demais dados ausentes preenchidos com zero
+    X[columns_int] = X[columns_int].fillna(int(0))
+    X[columns_float] = X[columns_float].fillna(0)
 
-        try:
-            print("Dados anos anteriores carregados localmente")
-            df_anos_ant = get_google_sheet_data(sheet_title="dados_anos_anteriores", worksheet_name="Sheet1", local=True)
-        except:
-            print("Dados anos anteriores carregados do drive")
-            df_anos_ant = get_google_sheet_data(sheet_title="dados_anos_anteriores", worksheet_name="Sheet1", local=False)
 
-        finally:
-            print("Processo de carregamento concluído.")
 
-        if not df_anos_ant.empty:
-            # Formata datas para o padrão do DataFrame atual
-            df_anos_ant["data_contato"] = pd.to_datetime(
-                df_anos_ant["data_contato"]
-            ).dt.strftime("%d/%m/%Y")
-            df_anos_ant["data_evento"] = pd.to_datetime(
-                df_anos_ant["data_evento"]
-            ).dt.strftime("%d/%m/%Y")
+    # Formata datas para o padrão do DataFrame atual
+    y["data_contato"] = pd.to_datetime(
+        y["data_contato"]
+    ).dt.strftime("%d/%m/%Y")
+    y["data_evento"] = pd.to_datetime(
+        y["data_evento"]
+    ).dt.strftime("%d/%m/%Y")
 
-            # df_anos_ant.insert(1, "local", "thai house")
+    # y.insert(1, "local", "thai house")
 
-            # Padroniza nomes de colunas
-            df_anos_ant.rename(
-                columns={
-                    "resp_evento": "resp",
-                    "qtde_convidados": "convidados_previstos",
-                },
-                inplace=True,
-            )
+    # Padroniza nomes de colunas
+    y.rename(
+        columns={
+            "resp_evento": "resp",
+            "qtde_convidados": "convidados_previstos",
+        },
+        inplace=True,
+    )
 
-            # Mantém apenas as colunas necessárias para concatenação
-            df_anos_ant = df_anos_ant.drop(
-                columns=list(set(df_anos_ant.columns.tolist()) - set(columns_manter))
-            )
+    # Mantém apenas as colunas necessárias para concatenação
+    y = y.drop(
+        columns=list(set(y.columns.tolist()) - set(columns_manter))
+    )
 
-            df_anos_ant["manter_total_previsto"] = True
+    y["manter_total_previsto"] = True
 
-        # Concatena os DataFrames
-        df_completo = pd.concat(
-            [df_anos_ant, X], axis=0, join="outer", ignore_index=True
+    # Concatena os DataFrames
+    df_completo = pd.concat(
+        [y, X], axis=0, join="outer", ignore_index=True
+    )
+
+    df_completo.reset_index(drop=True, inplace=True)
+
+    # Converte colunas numéricas
+    df_completo[numeric_cols] = df_completo[numeric_cols].astype(float)
+
+    # --- Tratamento de Missing Values e Tipos (DataFrame Combinado) ---
+
+    # Tratamento e conversão de colunas de Data/Hora
+    df_completo["horário_início"] = df_completo["horário_início"].str.replace(
+        ";", ":", regex=False
+    )
+    df_completo["data_contato"] = pd.to_datetime(
+        df_completo["data_contato"], errors="coerce", dayfirst=True
+    )
+    df_completo["data_evento"] = pd.to_datetime(
+        df_completo["data_evento"], errors="coerce", dayfirst=True
+    )
+    # df_completo["horário_início"] = pd.to_datetime(
+    #     df_completo["horário_início"], format="%H:%M", errors="coerce"
+    # ).dt.time
+
+    # Preenche 'data_contato' com 'data_evento' onde for nulo
+    df_completo["data_contato"] = df_completo.data_contato.fillna(
+        df_completo.data_evento
+    )
+
+    # Preenche 'data_evento' futuro para nulos
+    dia = dt.today().date() + pd.DateOffset(days=20)
+    df_completo["data_evento"] = pd.to_datetime(df_completo.data_evento.fillna(dia))
+
+    # Aplica os cálculos automáticos na base consolidada
+    df_completo = calculos_automaticos(df_completo)
+
+    # --- Organização e Padronização de Strings ---
+
+    # Remove caracteres especiais do 'contato' (mantendo apenas letras e números)
+    char_esp = re.compile(r"\W+", re.MULTILINE)
+    df_completo["contato"] = df_completo.contato.replace(char_esp, " ", regex=True)
+
+    # Limpa, padroniza caixa baixa e capitaliza (título) todas as colunas string
+    df_completo = df_completo.apply(
+        lambda col: (
+            col.astype(str).str.strip().str.casefold().str.capitalize()
+            if col.name != "email"
+            else col
         )
+    )
 
-        df_completo.reset_index(drop=True, inplace=True)
+    # Remove múltiplos espaços em branco
+    regex_blank = re.compile(r"\s+", flags=re.MULTILINE)
+    df_completo = df_completo.apply(
+        lambda x: x.str.replace(regex_blank, " ", regex=True)
+    )
 
-        # Converte colunas numéricas
-        df_completo[numeric_cols] = df_completo[numeric_cols].astype(float)
+    # Remove a palavra "Menu" do cardápio e aplica título
+    regex_menu = re.compile(r"[Menu]{4}(\s)?", flags=re.MULTILINE)
+    df_completo["cardápio"] = df_completo.cardápio.str.replace(
+        regex_menu, "", regex=True
+    ).str.title()
 
-        # --- Tratamento de Missing Values e Tipos (DataFrame Combinado) ---
+    df_completo["empresa"] = df_completo["empresa"].str.title()
+    df_completo["contato"] = df_completo["contato"].str.title()
 
-        # Tratamento e conversão de colunas de Data/Hora
-        df_completo["horário_início"] = df_completo["horário_início"].str.replace(
-            ";", ":", regex=False
+    # Padroniza nomes de cardápios com erros de digitação comuns
+    df_completo["cardápio"] = (
+        df_completo.cardápio.replace("Ko Lanta", "Koh Lanta")
+        .replace("Ko Pee Pee", "Koh Pee Pee")
+        .replace("Ko Sak", "Koh Sak")
+        .replace("Dia Dos Namorados", "Namorados")
+        .replace("Koh Sammet", "Koh Samet")
+    )
+
+    # Define listas de cardápios válidos
+    fast = [
+        "kafae",
+        "ma-li",
+        "pi-leh",
+        "ko mattra",
+        "koh kood",
+    ]
+    padrao = [
+        "Phuket",
+        "Koh Pee Pee",
+        "Koh Sak",
+        "Koh Lanta",
+        "Ko mai Thon",
+        "ko nom sao",
+    ]
+    economico = ["koh samet", "krab", "krab"]
+    nao_definido = ["Não Informado", "a definir"]
+    card_river = ["Sushi-01", "Sushi-02", "Sushi-03"]
+
+    menu_completo = list(
+        set(
+            item.lower()
+            for item in (fast + padrao + economico + nao_definido + card_river)
         )
-        df_completo["data_contato"] = pd.to_datetime(
-            df_completo["data_contato"], errors="coerce", dayfirst=True
-        )
-        df_completo["data_evento"] = pd.to_datetime(
-            df_completo["data_evento"], errors="coerce", dayfirst=True
-        )
-        # df_completo["horário_início"] = pd.to_datetime(
-        #     df_completo["horário_início"], format="%H:%M", errors="coerce"
-        # ).dt.time
+    )
 
-        # Preenche 'data_contato' com 'data_evento' onde for nulo
-        df_completo["data_contato"] = df_completo.data_contato.fillna(
-            df_completo.data_evento
-        )
+    # Substitui cardápios que não estão na lista de padronização por "Especial"
+    condition = ~df_completo["cardápio"].str.lower().isin(menu_completo)
+    df_completo.loc[condition, "cardápio"] = "Especial"
 
-        # Preenche 'data_evento' futuro para nulos
-        dia = dt.today().date() + pd.DateOffset(days=20)
-        df_completo["data_evento"] = pd.to_datetime(df_completo.data_evento.fillna(dia))
+    # Ordena o DataFrame pela data do evento
+    df_completo = df_completo.sort_values("data_evento", ignore_index=True)
 
-        # Aplica os cálculos automáticos na base consolidada
-        df_completo = calculos_automaticos(df_completo)
+    print("Leitura e processamento realizados.")
 
-        # --- Organização e Padronização de Strings ---
-
-        # Remove caracteres especiais do 'contato' (mantendo apenas letras e números)
-        char_esp = re.compile(r"\W+", re.MULTILINE)
-        df_completo["contato"] = df_completo.contato.replace(char_esp, " ", regex=True)
-
-        # Limpa, padroniza caixa baixa e capitaliza (título) todas as colunas string
-        df_completo = df_completo.apply(
-            lambda col: (
-                col.astype(str).str.strip().str.casefold().str.capitalize()
-                if col.name != "email"
-                else col
-            )
-        )
-
-        # Remove múltiplos espaços em branco
-        regex_blank = re.compile(r"\s+", flags=re.MULTILINE)
-        df_completo = df_completo.apply(
-            lambda x: x.str.replace(regex_blank, " ", regex=True)
-        )
-
-        # Remove a palavra "Menu" do cardápio e aplica título
-        regex_menu = re.compile(r"[Menu]{4}(\s)?", flags=re.MULTILINE)
-        df_completo["cardápio"] = df_completo.cardápio.str.replace(
-            regex_menu, "", regex=True
-        ).str.title()
-
-        df_completo["empresa"] = df_completo["empresa"].str.title()
-        df_completo["contato"] = df_completo["contato"].str.title()
-
-        # Padroniza nomes de cardápios com erros de digitação comuns
-        df_completo["cardápio"] = (
-            df_completo.cardápio.replace("Ko Lanta", "Koh Lanta")
-            .replace("Ko Pee Pee", "Koh Pee Pee")
-            .replace("Ko Sak", "Koh Sak")
-            .replace("Dia Dos Namorados", "Namorados")
-            .replace("Koh Sammet", "Koh Samet")
-        )
-
-        # Define listas de cardápios válidos
-        fast = [
-            "kafae",
-            "ma-li",
-            "pi-leh",
-            "ko mattra",
-            "koh kood",
-        ]
-        padrao = [
-            "Phuket",
-            "Koh Pee Pee",
-            "Koh Sak",
-            "Koh Lanta",
-            "Ko mai Thon",
-            "ko nom sao",
-        ]
-        economico = ["koh samet", "krab", "krab"]
-        nao_definido = ["Não Informado", "a definir"]
-        card_river = ["Sushi-01", "Sushi-02", "Sushi-03"]
-
-        menu_completo = list(
-            set(
-                item.lower()
-                for item in (fast + padrao + economico + nao_definido + card_river)
-            )
-        )
-
-        # Substitui cardápios que não estão na lista de padronização por "Especial"
-        condition = ~df_completo["cardápio"].str.lower().isin(menu_completo)
-        df_completo.loc[condition, "cardápio"] = "Especial"
-
-        # Ordena o DataFrame pela data do evento
-        df_completo = df_completo.sort_values("data_evento", ignore_index=True)
-
-        print("Leitura e processamento realizados.")
-
-        return format_cols(df_completo)
+    return format_cols(df_completo)
 
 
 if __name__ == "__main__":
