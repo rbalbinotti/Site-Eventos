@@ -453,7 +453,3 @@ if __name__ == "__main__":
         sheet_title="Prog_eventos_thai_house", worksheet_name="Completa", local=True
     )
     print(df.columns)
-
-
-
-# ['cardápio', 'valor_extra', 'tipo', 'total_convidados_presentes', 'email', 'data_evento', 'valor_total_previsto', 'kids_presentes', 'preço', 'empresa', 'local', 'situação', 'resp', 'manter_total_previsto', 'contato', 'convidados_previstos', 'sinal', 'data_contato', 'observação', 'preço_kids', 'convidados_presentes', 'etapa', 'telefone', 'forma_de_pagamento', 'kids', 'horário_início', 'valor_total_realizado']
