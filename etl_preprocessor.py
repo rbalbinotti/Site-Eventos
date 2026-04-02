@@ -333,7 +333,7 @@ def run_full_etl(
         y["data_evento"]
     ).dt.strftime("%d/%m/%Y")
 
-    # y.insert(1, "local", "thai house")
+    y.insert(1, "local", "thai house")
 
     # Padroniza nomes de colunas
     y.rename(
