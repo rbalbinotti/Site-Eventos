@@ -324,13 +324,6 @@ def run_full_etl(
         inplace=True,
     )
 
-    # Mantém apenas as colunas necessárias para concatenação
-    y = y.drop(
-        columns=list(set(y.columns.tolist()) - set(columns_manter))
-    )
-
-    y["manter_total_previsto"] = True
-
     # Concatena os DataFrames
     df_completo = pd.concat(
         [y, X], axis=0, join="outer", ignore_index=True
@@ -442,13 +435,25 @@ def run_full_etl(
     # Ordena o DataFrame pela data do evento
     df_completo = df_completo.sort_values("data_evento", ignore_index=True)
 
+    # Remove colunas desnecessárias
+    drop_columns = ['tipo', 'email', 'situação', 'resp', 'contato', 'observação', 'telefone', 'forma_de_pagamento', 'ano_evento', 'mes_evento', 'dia_semana', 'cod_etapa', 'manter_total_previsto', 'data_contato']
+    df_completo = df_completo.drop(
+        columns=drop_columns
+     )
+
+    df_completo.columns = df_completo.columns.str.title().str.replace("_", " ")
+
     print("Leitura e processamento realizados.")
 
-    return format_cols(df_completo)
+    return df_completo
 
 
 if __name__ == "__main__":
     df = run_full_etl(
         sheet_title="Prog_eventos_thai_house", worksheet_name="Completa", local=True
     )
-    print(df.isna().sum())
+    print(df.columns)
+
+
+
+# ['cardápio', 'valor_extra', 'tipo', 'total_convidados_presentes', 'email', 'data_evento', 'valor_total_previsto', 'kids_presentes', 'preço', 'empresa', 'local', 'situação', 'resp', 'manter_total_previsto', 'contato', 'convidados_previstos', 'sinal', 'data_contato', 'observação', 'preço_kids', 'convidados_presentes', 'etapa', 'telefone', 'forma_de_pagamento', 'kids', 'horário_início', 'valor_total_realizado']

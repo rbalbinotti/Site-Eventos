@@ -93,7 +93,15 @@ df_load = load_data()
 
 # df_load = get_google_sheet_data(sheet_title= "Prog_eventos_thai_house", worksheet_name="Completa", local=False)
 
-st.dataframe(df_load)
+st.dataframe(
+    df_load,
+    column_config={
+        "Data Evento": st.column_config.DateColumn(
+            format="DD-MM-YYYY",  # Formato desejado
+            step="day"  # Mostrar apenas dia (sem hora)
+        ),
+    }
+)
 
 # df_old = get_google_sheet_data(sheet_title="dados_anos_anteriores", worksheet_name="Sheet1", local=False)
 
