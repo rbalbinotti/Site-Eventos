@@ -72,7 +72,7 @@ st.title("Análise e Gestão de Eventos 📊")
 currentDate = date.today()
 currentYear = currentDate.year
 
-@st.cache_data
+#@st.cache_data
 def load_data():
     try:
         df = run_full_etl(
@@ -81,7 +81,6 @@ def load_data():
             local=False
         )
     except:
-        # Local logic (using local file or env)
         df = run_full_etl(
             sheet_title="Prog_eventos_thai_house",
             worksheet_name="Completa",

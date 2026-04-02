@@ -212,112 +212,113 @@ def run_full_etl(
 
     # VERIFICAÇÃO BÁSICA
     if X.empty:
-        print("Erro ao carregar dados ou DataFrame vazio.")
+        st.error
+        st.error(f"Não foi possível encontrar dados em: {sheet_title}")
         return X
-    else:
-        # --- Organização e Conversão de Tipos (DataFrame Atual) ---
-        # Renomeia colunas para minúsculas e substitui espaços por underscores
-        colunas_lower_replace(X)
+    # else:
+    #     # --- Organização e Conversão de Tipos (DataFrame Atual) ---
+    #     # Renomeia colunas para minúsculas e substitui espaços por underscores
+    #     colunas_lower_replace(X)
 
-        columns_manter = [
-            "local",
-            "kids_presentes",
-            "sinal",
-            "resp",
-            "empresa",
-            "cardápio",
-            "kids",
-            "preço_kids",
-            "convidados_presentes",
-            "convidados_previstos",
-            "forma_de_pagamento",
-            "etapa",
-            "telefone",
-            "valor_extra",
-            "horário_início",
-            "situação",
-            "email",
-            "data_contato",
-            "observação",
-            "data_evento",
-            "preço",
-            "tipo",
-            "contato",
-            "manter_total_previsto",
-        ]
-        columns_int = ["kids_presentes", "kids", "convidados_presentes"]
-        columns_float = ["sinal", "preço_kids", "valor_extra"]
-        numeric_cols = columns_float + columns_int + ["convidados_previstos", "preço"]
+    #     columns_manter = [
+    #         "local",
+    #         "kids_presentes",
+    #         "sinal",
+    #         "resp",
+    #         "empresa",
+    #         "cardápio",
+    #         "kids",
+    #         "preço_kids",
+    #         "convidados_presentes",
+    #         "convidados_previstos",
+    #         "forma_de_pagamento",
+    #         "etapa",
+    #         "telefone",
+    #         "valor_extra",
+    #         "horário_início",
+    #         "situação",
+    #         "email",
+    #         "data_contato",
+    #         "observação",
+    #         "data_evento",
+    #         "preço",
+    #         "tipo",
+    #         "contato",
+    #         "manter_total_previsto",
+    #     ]
+    #     columns_int = ["kids_presentes", "kids", "convidados_presentes"]
+    #     columns_float = ["sinal", "preço_kids", "valor_extra"]
+    #     numeric_cols = columns_float + columns_int + ["convidados_previstos", "preço"]
 
-        X = X[columns_manter].copy()
+    #     X = X[columns_manter].copy()
 
-        # Converte 'manter_total_previsto' para booleano
-        X["manter_total_previsto"] = np.where(
-            X["manter_total_previsto"] == "FALSE", 0, 1
-        ).astype(bool)
+    #     # Converte 'manter_total_previsto' para booleano
+    #     X["manter_total_previsto"] = np.where(
+    #         X["manter_total_previsto"] == "FALSE", 0, 1
+    #     ).astype(bool)
 
-        X = X.replace("", np.nan)
+    #     X = X.replace("", np.nan)
 
-        # Converte colunas numéricas de string (com vírgula) para float
-        X[numeric_cols] = (
-            X[numeric_cols].apply(lambda x: x.str.replace(",", ".")).astype(float)
-        )
+    #     # Converte colunas numéricas de string (com vírgula) para float
+    #     X[numeric_cols] = (
+    #         X[numeric_cols].apply(lambda x: x.str.replace(",", ".")).astype(float)
+    #     )
 
-        # Preenche strings ausentes com "Não Informado"
-        string_cols = [
-            "local",
-            "situação",
-            "tipo",
-            "empresa",
-            "contato",
-            "telefone",
-            "email",
-            "cardápio",
-            "forma_de_pagamento",
-            "observação",
-        ]
-        X[string_cols] = X[string_cols].fillna("Não Informado")
-        X[string_cols] = X[string_cols].apply(lambda x: x.str.lower())
+    #     # Preenche strings ausentes com "Não Informado"
+    #     string_cols = [
+    #         "local",
+    #         "situação",
+    #         "tipo",
+    #         "empresa",
+    #         "contato",
+    #         "telefone",
+    #         "email",
+    #         "cardápio",
+    #         "forma_de_pagamento",
+    #         "observação",
+    #     ]
+    #     X[string_cols] = X[string_cols].fillna("Não Informado")
+    #     X[string_cols] = X[string_cols].apply(lambda x: x.str.lower())
 
-        X["horário_início"] = X["horário_início"].fillna("00:00")
+    #     X["horário_início"] = X["horário_início"].fillna("00:00")
 
-        # Tratamento preços ausentes
-        media_preco_thai = (
-            X.query('local == "thai house"')["preço"].mean().astype(float).round()
-        )
-        media_preco_river = (
-            X.query('local == "river"')["preço"].mean().astype(float).round()
-        )
-        X["preço"] = np.where(
-            (X["local"] == "thai house") & (X["preço"].isna()),
-            media_preco_thai,
-            np.where(
-                (X["local"] == "river") & (X["preço"].isna()),
-                media_preco_river,
-                X["preço"],
-            ),
-        )
+    #     # Tratamento preços ausentes
+    #     media_preco_thai = (
+    #         X.query('local == "thai house"')["preço"].mean().astype(float).round()
+    #     )
+    #     media_preco_river = (
+    #         X.query('local == "river"')["preço"].mean().astype(float).round()
+    #     )
+    #     X["preço"] = np.where(
+    #         (X["local"] == "thai house") & (X["preço"].isna()),
+    #         media_preco_thai,
+    #         np.where(
+    #             (X["local"] == "river") & (X["preço"].isna()),
+    #             media_preco_river,
+    #             X["preço"],
+    #         ),
+    #     )
 
-        # Tratamento convidados ausentes
-        media_convidados_thai = (
-            X.query('local == "thai house"')["convidados_previstos"].mean().round()
-        )
-        media_convidados_river = (
-            X.query('local == "river"')["convidados_previstos"].mean().round()
-        )
-        X["convidados_previstos"] = np.where(
-            (X["local"] == "thai house") & (X["convidados_previstos"].isna()),
-            media_convidados_thai,
-            np.where(
-                (X["local"] == "river") & (X["convidados_previstos"].isna()),
-                media_convidados_river,
-                X["convidados_previstos"],
-            ),
-        )
+    #     # Tratamento convidados ausentes
+    #     media_convidados_thai = (
+    #         X.query('local == "thai house"')["convidados_previstos"].mean().round()
+    #     )
+    #     media_convidados_river = (
+    #         X.query('local == "river"')["convidados_previstos"].mean().round()
+    #     )
+    #     X["convidados_previstos"] = np.where(
+    #         (X["local"] == "thai house") & (X["convidados_previstos"].isna()),
+    #         media_convidados_thai,
+    #         np.where(
+    #             (X["local"] == "river") & (X["convidados_previstos"].isna()),
+    #             media_convidados_river,
+    #             X["convidados_previstos"],
+    #         ),
+    #     )
 
-        # Demais dados ausentes preenchidos com zero
-        X[columns_int] = X[columns_int].fillna(int(0))
-        X[columns_float] = X[columns_float].fillna(0)
+    #     # Demais dados ausentes preenchidos com zero
+    #     X[columns_int] = X[columns_int].fillna(int(0))
+    #     X[columns_float] = X[columns_float].fillna(0)
 
         # Leitura do dados dos anos anteriores
 
