@@ -40,7 +40,7 @@ def colunas_lower_replace(x):
     Create col_padrao with names to replace.
     '''
     # x.rename(columns=col_padrao, inplace=True)
-    x.columns = x.columns.str.strip().str.lower().str.replace(' ', '_')
+    x.columns = x.columns.astype(str).str.strip().str.lower().str.replace(' ', '_')
     return x
 
 
