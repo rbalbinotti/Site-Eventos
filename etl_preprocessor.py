@@ -134,7 +134,7 @@ def format_cols(
     df[columns_date] = df[columns_date].apply(
         lambda x: pd.to_datetime(x, errors="coerce", dayfirst=True)
     )
-    df.columns = df.columns.str.lower().str.strip().str.replace(" ", "_")
+    df.columns = df.columns.astype(str).str.lower().str.strip().str.replace(" ", "_")
     return df
 
 
@@ -471,4 +471,4 @@ if __name__ == "__main__":
     df = run_full_etl(
         sheet_title="Prog_eventos_thai_house", worksheet_name="Completa", local=True
     )
-    print(df.head())
+    print(df.info())
