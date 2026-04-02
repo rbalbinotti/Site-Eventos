@@ -223,32 +223,14 @@ def run_full_etl(
     # Renomeia colunas para minúsculas e substitui espaços por underscores
     colunas_lower_replace(X)
 
-    columns_manter = [
-        "local",
-        "kids_presentes",
-        "sinal",
-        "resp",
-        "empresa",
-        "cardápio",
-        "kids",
-        "preço_kids",
-        "convidados_presentes",
-        "convidados_previstos",
-        "forma_de_pagamento",
-        "etapa",
-        "telefone",
-        "valor_extra",
-        "horário_início",
-        "situação",
-        "email",
-        "data_contato",
-        "observação",
-        "data_evento",
-        "preço",
-        "tipo",
-        "contato",
-        "manter_total_previsto",
-    ]
+    x_columns = X.columns.tolist()
+
+    y_columns = y.columns.tolist()
+
+    columns_manter = list(set(x_columns) - (set(x_columns) - set(y_columns)))
+
+    # print(columns_manter)
+
     columns_int = ["kids_presentes", "kids", "convidados_presentes"]
     columns_float = ["sinal", "preço_kids", "valor_extra"]
     numeric_cols = columns_float + columns_int + ["convidados_previstos", "preço"]
@@ -332,8 +314,6 @@ def run_full_etl(
     y["data_evento"] = pd.to_datetime(
         y["data_evento"]
     ).dt.strftime("%d/%m/%Y")
-
-    y.insert(1, "local", "thai house")
 
     # Padroniza nomes de colunas
     y.rename(
@@ -471,4 +451,4 @@ if __name__ == "__main__":
     df = run_full_etl(
         sheet_title="Prog_eventos_thai_house", worksheet_name="Completa", local=True
     )
-    print(df.info())
+    print(df.isna().sum())

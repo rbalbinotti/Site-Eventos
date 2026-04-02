@@ -72,7 +72,8 @@ st.title("Análise e Gestão de Eventos 📊")
 currentDate = date.today()
 currentYear = currentDate.year
 
-
+# ------------------------------------------------------------------------------
+# ------------------  Start load data ------------------------------------------
 try:
 
     @st.cache_data
@@ -98,6 +99,10 @@ except:
 
 # Carrega os dados
 df_load = load_data()
+
+# ------------------------------------------------------------------------------
+# ------------------  end load data --------------------------------------------
+
 
 # Pré-processamento e filtragem inicial
 preprocessor = DataProcess(cat_col='etapa', data_col="data_evento")
