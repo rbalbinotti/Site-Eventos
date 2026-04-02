@@ -11,7 +11,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 import streamlit as st
 
 try:
-    from arq_py.mod_func import (
+    from arq_py.mod_func import ( # pyright: ignore[reportMissingImports]
         colunas_lower_replace,
         whitespace_remover,
     )  # Funções auxiliares (biblioteca local)
