@@ -74,55 +74,55 @@ currentYear = currentDate.year
 
 # ------------------------------------------------------------------------------
 # ------------------  Start load data ------------------------------------------
-# try:
+try:
 
-#     @st.cache_data
-#     def load_data():
-#         """Roda o processo completo de ETL e carrega os dados brutos."""
-#         df = run_full_etl(
-#             sheet_title="Prog_eventos_thai_house",
-#             worksheet_name="Completa",
-#             local=False,
-#         )
-#         return df
-
-# except:
-
-#     @st.cache_data
-#     def load_data():
-#         """Roda o processo completo de ETL e carrega os dados brutos."""
-#         df = run_full_etl(
-#             sheet_title="Prog_eventos_thai_house", worksheet_name="Completa", local=True
-#         )
-#         return df
-
-@st.cache_data
-def load_data():
-    try:
+    @st.cache_data
+    def load_data():
+        """Roda o processo completo de ETL e carrega os dados brutos."""
         df = run_full_etl(
             sheet_title="Prog_eventos_thai_house",
             worksheet_name="Completa",
-            local=False
+            local=False,
         )
-        if not df.empty:
-            return df
-    except Exception as e:
-        st.warning(f"Modo cloud falhou: {e}")
+        return df
 
-    # Só tenta modo local se NÃO estiver no Streamlit Cloud
-    if not st.runtime.exists():  # True apenas localmente
-        try:
-            df = run_full_etl(
-                sheet_title="Prog_eventos_thai_house",
-                worksheet_name="Completa",
-                local=True
-            )
-            print(df)
-            return df
-        except Exception as e:
-            st.error(f"Modo local também falhou: {e}")
+except:
+
+    @st.cache_data
+    def load_data():
+        """Roda o processo completo de ETL e carrega os dados brutos."""
+        df = run_full_etl(
+            sheet_title="Prog_eventos_thai_house", worksheet_name="Completa", local=True
+        )
+        return df
+
+# @st.cache_data
+# def load_data():
+#     try:
+#         df = run_full_etl(
+#             sheet_title="Prog_eventos_thai_house",
+#             worksheet_name="Completa",
+#             local=False
+#         )
+#         if not df.empty:
+#             return df
+#     except Exception as e:
+#         st.warning(f"Modo cloud falhou: {e}")
+
+#     # Só tenta modo local se NÃO estiver no Streamlit Cloud
+#     if not st.runtime.exists():  # True apenas localmente
+#         try:
+#             df = run_full_etl(
+#                 sheet_title="Prog_eventos_thai_house",
+#                 worksheet_name="Completa",
+#                 local=True
+#             )
+#             print(df)
+#             return df
+#         except Exception as e:
+#             st.error(f"Modo local também falhou: {e}")
     
-    return pd.DataFrame()
+#     return pd.DataFrame()
 
 
 # Carrega os dados
