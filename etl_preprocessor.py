@@ -71,49 +71,51 @@ def get_google_sheet_data(
 
         # 1. Carrega as credenciais do Streamlit Secrets
         # (Nome da chave deve ser o mesmo usado no seu .streamlit/secrets.toml)
-        # try:
-        #     gcp_service_account_dict = dict(st.secrets["gcp_service_account"])
-        # except FileNotFoundError:
-        #     st.error("Erro: O arquivo .streamlit/secrets.toml não foi configurado.")
-        #     return pd.DataFrame()
-
-        # # 2. Autentica o gspread
-        # gc = gspread.service_account_from_dict(gcp_service_account_dict)
-
-        # # 3. Abre a planilha e a aba
-        # # ATENÇÃO: Substitua os placeholders pelos nomes reais da sua planilha e aba!
-        # sh = gc.open(sheet_title)
-        # worksheet = sh.worksheet(worksheet_name)
-
-        # # 4. Obtém todos os dados (lista de listas)
-        # data = worksheet.get_all_values()
-
-        # # 5. Cria o DataFrame (primeira linha como cabeçalho, resto como dados)
-        # df = pd.DataFrame(data[1:], columns=data[0])
-
-        # print(f"Dados carregados de: {sheet_title} - {worksheet_name}")
-        # return df
         try:
             gcp_service_account_dict = dict(st.secrets["gcp_service_account"])
-        except KeyError:
-            st.error("❌ Seção 'gcp_service_account' não encontrada nos Secrets.")
-            st.info("Configure os Secrets no Streamlit Cloud conforme documentação.")
+        except FileNotFoundError:
+            st.error("Erro: O arquivo .streamlit/secrets.toml não foi configurado.")
             return pd.DataFrame()
-        except Exception as e:
-            st.error(f"Erro ao ler secrets: {e}")
-            return pd.DataFrame()
+
+        # 2. Autentica o gspread
+        gc = gspread.service_account_from_dict(gcp_service_account_dict)
+
+        # 3. Abre a planilha e a aba
+        # ATENÇÃO: Substitua os placeholders pelos nomes reais da sua planilha e aba!
+        sh = gc.open(sheet_title)
+        worksheet = sh.worksheet(worksheet_name)
+
+        # 4. Obtém todos os dados (lista de listas)
+        data = worksheet.get_all_values()
+
+        # 5. Cria o DataFrame (primeira linha como cabeçalho, resto como dados)
+        df = pd.DataFrame(data[1:], columns=data[0])
+
+        print(f"Dados carregados de: {sheet_title} - {worksheet_name}")
+        return df
+
+
+        # try:
+        #     gcp_service_account_dict = dict(st.secrets["gcp_service_account"])
+        # except KeyError:
+        #     st.error("❌ Seção 'gcp_service_account' não encontrada nos Secrets.")
+        #     st.info("Configure os Secrets no Streamlit Cloud conforme documentação.")
+        #     return pd.DataFrame()
+        # except Exception as e:
+        #     st.error(f"Erro ao ler secrets: {e}")
+        #     return pd.DataFrame()
         
-        try:
-            gc = gspread.service_account_from_dict(gcp_service_account_dict)
-            sh = gc.open(sheet_title)
-            worksheet = sh.worksheet(worksheet_name)
-            data = worksheet.get_all_values()
-            df = pd.DataFrame(data[1:], columns=data[0])
-            print(f"Dados carregados de: {sheet_title} - {worksheet_name}")
-            return df
-        except Exception as e:
-            st.error(f"❌ Falha ao conectar ao Google Sheets: {e}")
-            return pd.DataFrame()
+        # try:
+        #     gc = gspread.service_account_from_dict(gcp_service_account_dict)
+        #     sh = gc.open(sheet_title)
+        #     worksheet = sh.worksheet(worksheet_name)
+        #     data = worksheet.get_all_values()
+        #     df = pd.DataFrame(data[1:], columns=data[0])
+        #     print(f"Dados carregados de: {sheet_title} - {worksheet_name}")
+        #     return df
+        # except Exception as e:
+        #     st.error(f"❌ Falha ao conectar ao Google Sheets: {e}")
+        #     return pd.DataFrame()
 
 
 # -------------------------------------------------------------------------
