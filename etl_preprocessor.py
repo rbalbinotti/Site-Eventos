@@ -208,17 +208,17 @@ def run_full_etl(
     :returns: O DataFrame processado final.
     """
 
-    # # Informa o local para formatação de data e moeda
-    # try:
-    #     locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
-    # except locale.Error:
-    #     # Fallback to a common, system-available locale that supports UTF-8
-    #     # C.UTF-8 is often available in modern environments
-    #     try:
-    #         locale.setlocale(locale.LC_ALL, "C.UTF-8")
-    #     except locale.Error:
-    #         # Final fallback - usually "C" which is guaranteed to work but lacks UTF-8 support
-    #         locale.setlocale(locale.LC_ALL, "C")
+    # Informa o local para formatação de data e moeda
+    try:
+        locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
+    except locale.Error:
+        # Fallback to a common, system-available locale that supports UTF-8
+        # C.UTF-8 is often available in modern environments
+        try:
+            locale.setlocale(locale.LC_ALL, "C.UTF-8")
+        except locale.Error:
+            # Final fallback - usually "C" which is guaranteed to work but lacks UTF-8 support
+            locale.setlocale(locale.LC_ALL, "C")
 
     # Configura o Pandas
     pd.set_option("display.precision", 2)
@@ -462,7 +462,15 @@ def run_full_etl(
         columns=drop_columns
      )
 
-    df_completo.columns = df_completo.columns.str.title().str.replace("_", " ")
+    # df_completo.columns = df_completo.columns.str.title().str.replace("_", " ")
+    df_completo["data_evento"] = pd.to_datetime(
+        df_completo["data_evento"], errors="coerce", dayfirst=True
+    )
+    int_cols = ['convidados_previstos', 'kids', 'convidados_presentes', 'kids_presentes', 'total_convidados_previsto', 'total_convidados_presentes']
+    float_cols = ['preço', 'preço_kids', 'sinal', 'valor_extra', 'valor_total_previsto', 'valor_total_realizado']
+
+    # df_completo[int_cols] = df_completo[int_cols].astype(np.int32)
+    df_completo[float_cols + int_cols] = df_completo[float_cols + int_cols].astype(np.float32)
 
     print("Leitura e processamento realizados.")
 
@@ -473,4 +481,4 @@ if __name__ == "__main__":
     df = run_full_etl(
         sheet_title="Prog_eventos_thai_house", worksheet_name="Completa", local=True
     )
-    print(df.columns)
+    print(df.info())

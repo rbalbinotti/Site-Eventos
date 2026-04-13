@@ -87,7 +87,7 @@ def plot_hist(df: pd.DataFrame, x_axis: str = None, y_axis: str = None, color: s
         df,
         x=x_axis,
         y=y_axis,
-        text_auto=True,
+        text_auto='.2s',
         color=color,
         # Define a ordem das categorias de cor (Local)
         category_orders={"Local": ["Thai house", "River"]}
@@ -191,9 +191,9 @@ def create_table(df: pd.DataFrame, etapa_select: str, previsto: bool) -> pd.Data
 
     # Colunas base e colunas de valor (previsto ou realizado)
     if etapa_select == "Realizado":
-        cols = ["Resp", "Local","Etapa","Total convidados presentes","Data evento","Horário início","Empresa","Contato"]
+        cols = ["Local","Etapa","Total convidados presentes","Data evento","Horário início","Empresa"]
     else:
-        cols = ["Resp", "Local","Etapa","Total convidados previsto","Data evento","Horário início","Empresa","Contato"]
+        cols = ["Local","Etapa","Total convidados previsto","Data evento","Horário início","Empresa"]
     
     filter_cols = cols + ["Valor total previsto"] if previsto else cols + ['Valor total realizado']
 
