@@ -2,6 +2,7 @@ from __future__ import print_function
 from datetime import datetime as dt
 
 import locale
+from typing import Literal
 import numpy as np
 import pandas as pd
 import warnings
@@ -24,9 +25,9 @@ warnings.filterwarnings("ignore")
 # -------------------------------------------------------------------------
 # O cache evita que a planilha seja lida novamente a cada interação do usuário.
 #@st.cache_data(ttl=600) # ttl=600 significa que o cache dura 10 minutos
-def get_google_sheet_data(sheet_title: str, worksheet_name: str, local: bool = False) -> pd.DataFrame:
+def get_google_sheet_data(sheet_title: str, worksheet_name: str, local: Literal['local', 'site'] = 'site') -> pd.DataFrame:
 
-    if not local:
+    if local == 'site':
 
         """
         Autentica no Google Sheets usando st.secrets e carrega o DataFrame.
@@ -59,7 +60,7 @@ def get_google_sheet_data(sheet_title: str, worksheet_name: str, local: bool = F
         print(f'Dados carregados de: {sheet_title} - {worksheet_name}')
         return df
     
-    else:
+    elif local == 'local':
           
         """
         Autentica no Google Sheets e carrega o DataFrame.
@@ -90,6 +91,8 @@ def get_google_sheet_data(sheet_title: str, worksheet_name: str, local: bool = F
         
         print(f'Dados carregados de: {sheet_title} - {worksheet_name}')
         return df
+    else:
+        print('Erro de leitura dos dados.')
 
 
 # -------------------------------------------------------------------------
@@ -128,7 +131,7 @@ def format_cols(df: pd.DataFrame, columns_int: list = None, columns_float: list 
     return df
 
 
-def run_full_etl(sheet_title: str = None, worksheet_name: str = None, local: bool = False) -> pd.DataFrame:
+def run_full_etl(sheet_title: str = None, worksheet_name: str = None, local: Literal['site', 'local'] = 'site') -> pd.DataFrame:
     """
     Executa a sequência completa de Extração, Transformação e Carregamento (ETL).
     
@@ -157,9 +160,9 @@ def run_full_etl(sheet_title: str = None, worksheet_name: str = None, local: boo
     # 1. EXTRAÇÃO (E): CHAMADA DA FUNÇÃO DE CONEXÃO
     # A variável df_completo recebe os dados do Google Sheets
     try:
-        X = get_google_sheet_data(sheet_title, worksheet_name, local=True)
+        X = get_google_sheet_data(sheet_title, worksheet_name, local='site')
     except:
-        X = get_google_sheet_data(sheet_title, worksheet_name, local=False)
+        X = get_google_sheet_data(sheet_title, worksheet_name, local='local')
 
     columns_int = [
         "convidados_previstos",

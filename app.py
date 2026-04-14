@@ -74,20 +74,32 @@ currentYear = currentDate.year
 
 # ------------------------------------------------------------------------------
 # ------------------  Start load data ------------------------------------------
+try:
 
-@st.cache_data
-def load_data(local=False):
-    """Roda o processo completo de ETL e carrega os dados brutos."""
-    df = run_full_etl(
-        sheet_title="dados_siteThai",
-        worksheet_name="df_site",
-        local=local,
-    )
-    return df
+    @st.cache_data
+    def load_data():
+        """Roda o processo completo de ETL e carrega os dados brutos."""
+        df = run_full_etl(
+            sheet_title="dados_siteThai",
+            worksheet_name="df_site",
+            local='site',
+        )
+        return df
+
+except:
+
+    @st.cache_data
+    def load_data():
+        """Roda o processo completo de ETL e carrega os dados brutos."""
+        df = run_full_etl(
+            sheet_title="dados_siteThai", 
+            worksheet_name="df_site", 
+            local='local'
+        )
+        return df
 
 # Carrega os dados
 df_load = load_data()
-
 
 # ------------------------------------------------------------------------------
 # ------------------  end load data --------------------------------------------
