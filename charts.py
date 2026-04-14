@@ -191,9 +191,9 @@ def create_table(df: pd.DataFrame, etapa_select: str, previsto: bool) -> pd.Data
 
     # Colunas base e colunas de valor (previsto ou realizado)
     if etapa_select == "Realizado":
-        cols = ["Local","Etapa","Total convidados presentes","Data evento","Horário início","Empresa"]
+        cols = ["Local","Etapa", "Tipo", "Data evento", "Total convidados presentes"]
     else:
-        cols = ["Local","Etapa","Total convidados previsto","Data evento","Horário início","Empresa"]
+        cols = ["Local","Etapa", "Tipo", "Data evento", "Total convidados previsto"]
     
     filter_cols = cols + ["Valor total previsto"] if previsto else cols + ['Valor total realizado']
 

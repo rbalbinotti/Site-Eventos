@@ -11,7 +11,7 @@ from dateutil.relativedelta import relativedelta
 # Importações de módulos locais (presume-se que existam)
 # ATENÇÃO: Essas importações são mantidas, mas as classes/funções
 # etl_preprocessor, etl_utils, charts DEVE EXISTIR para o código rodar.
-from etl_preprocessor import run_full_etl
+from etl_preprocessor_site import run_full_etl
 from etl_utils import DataProcess, FilterSelection, dre
 from charts import (
     config_plot,
@@ -80,8 +80,8 @@ try:
     def load_data():
         """Roda o processo completo de ETL e carrega os dados brutos."""
         df = run_full_etl(
-            sheet_title="Prog_eventos_thai_house",
-            worksheet_name="Completa",
+            sheet_title="dados_siteThai",
+            worksheet_name="df_site",
             local=False,
         )
         return df
@@ -92,7 +92,7 @@ except:
     def load_data():
         """Roda o processo completo de ETL e carrega os dados brutos."""
         df = run_full_etl(
-            sheet_title="Prog_eventos_thai_house", worksheet_name="Completa", local=True
+            sheet_title="dados_siteThai", worksheet_name="df_site", local=True
         )
         return df
 
@@ -100,8 +100,8 @@ except:
 # def load_data():
 #     try:
 #         df = run_full_etl(
-#             sheet_title="Prog_eventos_thai_house",
-#             worksheet_name="Completa",
+#             sheet_title="dados_siteThai",
+#             worksheet_name="df_site",
 #             local=False
 #         )
 #         if not df.empty:
@@ -113,8 +113,8 @@ except:
 #     if not st.runtime.exists():  # True apenas localmente
 #         try:
 #             df = run_full_etl(
-#                 sheet_title="Prog_eventos_thai_house",
-#                 worksheet_name="Completa",
+#                 sheet_title="dados_siteThai",
+#                 worksheet_name="df_site",
 #                 local=True
 #             )
 #             print(df)
