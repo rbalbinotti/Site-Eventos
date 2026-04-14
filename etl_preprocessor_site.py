@@ -97,28 +97,28 @@ def get_google_sheet_data(sheet_title: str, worksheet_name: str, local: bool = F
 # -------------------------------------------------------------------------
 
 def format_cols(df: pd.DataFrame, columns_int: list = None, columns_float: list = None, columns_date: list = None):
-    if not columns_int:
-        columns_int = [
-            "kids_presentes",
-            "kids",
-            "convidados_presentes",
-            "convidados_previstos",
-            "total_convidados_previsto",
-            "total_convidados_presentes",
-        ]
+    # if not columns_int:
+    #     columns_int = [
+    #         "kids_presentes",
+    #         "kids",
+    #         "convidados_presentes",
+    #         "convidados_previstos",
+    #         "total_convidados_previsto",
+    #         "total_convidados_presentes",
+    #     ]
     
-    if not columns_float:
-        columns_float = [
-            "sinal",
-            "preço_kids",
-            "valor_extra",
-            "preço",
-            "valor_total_previsto",
-            "valor_total_realizado",
-        ]
+    # if not columns_float:
+    #     columns_float = [
+    #         "sinal",
+    #         "preço_kids",
+    #         "valor_extra",
+    #         "preço",
+    #         "valor_total_previsto",
+    #         "valor_total_realizado",
+    #     ]
 
-    if not columns_date:
-        columns_date = ["data_contato", "data_evento"]
+    # if not columns_date:
+    #     columns_date = ["data_contato", "data_evento"]
 
     df[columns_int] = df[columns_int].astype(float).astype("uint16")
     df[columns_float] = df[columns_float].astype("float32").round()
