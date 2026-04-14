@@ -74,59 +74,20 @@ currentYear = currentDate.year
 
 # ------------------------------------------------------------------------------
 # ------------------  Start load data ------------------------------------------
-try:
 
-    @st.cache_data
-    def load_data():
-        """Roda o processo completo de ETL e carrega os dados brutos."""
-        df = run_full_etl(
-            sheet_title="dados_siteThai", worksheet_name="df_site", local=True
-        )
-        return df
-
-except:
-
-    @st.cache_data
-    def load_data():
-        """Roda o processo completo de ETL e carrega os dados brutos."""
-        df = run_full_etl(
-            sheet_title="dados_siteThai",
-            worksheet_name="df_site",
-            local=False,
-        )
-        return df
-
-# @st.cache_data
-# def load_data():
-#     try:
-#         df = run_full_etl(
-#             sheet_title="dados_siteThai",
-#             worksheet_name="df_site",
-#             local=False
-#         )
-#         if not df.empty:
-#             return df
-#     except Exception as e:
-#         st.warning(f"Modo cloud falhou: {e}")
-
-#     # Só tenta modo local se NÃO estiver no Streamlit Cloud
-#     if not st.runtime.exists():  # True apenas localmente
-#         try:
-#             df = run_full_etl(
-#                 sheet_title="dados_siteThai",
-#                 worksheet_name="df_site",
-#                 local=True
-#             )
-#             print(df)
-#             return df
-#         except Exception as e:
-#             st.error(f"Modo local também falhou: {e}")
-    
-#     return pd.DataFrame()
-
+@st.cache_data
+def load_data(local=False):
+    """Roda o processo completo de ETL e carrega os dados brutos."""
+    df = run_full_etl(
+        sheet_title="dados_siteThai",
+        worksheet_name="df_site",
+        local=local,
+    )
+    return df
 
 # Carrega os dados
 df_load = load_data()
+
 
 # ------------------------------------------------------------------------------
 # ------------------  end load data --------------------------------------------
