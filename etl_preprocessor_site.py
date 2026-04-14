@@ -105,7 +105,7 @@ def format_cols(df: pd.DataFrame, columns_int: list = None, columns_float: list 
     #         "kids_presentes",
     #         "kids",
     #         "convidados_presentes",
-    #         "convidados_previstos",
+    #         "convidados_previsto",
     #         "total_convidados_previsto",
     #         "total_convidados_presentes",
     #     ]
@@ -165,7 +165,7 @@ def run_full_etl(sheet_title: str = None, worksheet_name: str = None, local: Lit
         X = get_google_sheet_data(sheet_title, worksheet_name, local='local')
 
     columns_int = [
-        "convidados_previstos",
+        "convidados_previsto",
         "kids",
         "convidados_presentes",
         "kids_presentes",
