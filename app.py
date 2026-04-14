@@ -80,9 +80,7 @@ try:
     def load_data():
         """Roda o processo completo de ETL e carrega os dados brutos."""
         df = run_full_etl(
-            sheet_title="dados_siteThai",
-            worksheet_name="df_site",
-            local=False,
+            sheet_title="dados_siteThai", worksheet_name="df_site", local=True
         )
         return df
 
@@ -92,7 +90,9 @@ except:
     def load_data():
         """Roda o processo completo de ETL e carrega os dados brutos."""
         df = run_full_etl(
-            sheet_title="dados_siteThai", worksheet_name="df_site", local=True
+            sheet_title="dados_siteThai",
+            worksheet_name="df_site",
+            local=False,
         )
         return df
 
